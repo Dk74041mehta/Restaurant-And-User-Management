@@ -1,0 +1,506 @@
+/* src/index.css */
+
+/* --- Global & Typography --- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8; /* Light background for the app */
+    margin: 0;
+    padding: 0;
+}
+
+.home-page {
+    padding: 20px;
+    padding-bottom: 100px; /* CartSummary ke liye space */
+    max-width: 450px; /* Mobile width constraint */
+    margin: 0 auto;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.greeting h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.greeting p {
+    font-size: 16px;
+    color: #666;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* --- Search Bar Styling --- */
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    box-sizing: border-box; 
+    outline: none;
+}
+
+/* --- Category Selector Styling --- */
+.category-selector-container {
+    margin-bottom: 20px;
+    overflow-x: scroll; /* Horizontal Scroll */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.category-selector-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.category-list {
+    display: flex;
+    gap: 10px;
+}
+
+.category-button {
+    background-color: #fff;
+    border: 1px solid #eee;
+    padding: 8px 15px;
+    border-radius: 20px;
+    white-space: nowrap; 
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.category-button:focus {
+    outline: none;
+}
+
+.category-button.active {
+    background-color: #ff9900; /* Orange Accent */
+    color: white;
+    border-color: #ff9900;
+}
+
+/* --- Menu Item Styling --- */
+.menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.item-image-placeholder {
+    width: 60px;
+    height: 60px;
+    background-color: #f1f1f1; /* Image placeholder color */
+    border-radius: 8px;
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+.item-details {
+    flex-grow: 1;
+}
+
+.item-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.item-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.item-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+}
+
+.add-button, .minus-button, .plus-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #ff9900;
+    background-color: white;
+    color: #ff9900;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.1s;
+}
+
+.add-button {
+    background-color: #ff9900;
+    color: white;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    border: none;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-quantity {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* --- Cart Summary (Next Button) Styling --- */
+.cart-summary {
+    /* Fixed positioning for mobile bottom bar */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    /* Centering content within the fixed bar */
+    display: flex;
+    justify-content: center;
+    
+    padding: 15px 20px;
+    box-sizing: border-box;
+    background-color: #f8f8f8; /* Same as body background */
+    border-top: 1px solid #eee;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.next-button {
+    /* To ensure the button respects the max-width and looks good on wide screens */
+    width: 100%;
+    max-width: 450px; 
+    
+    padding: 15px;
+    background-color: #000; /* Black button from design */
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* src/index.css (Existing styles ke neeche add karein) */
+
+/* -----------------------------------------------------------------
+   --- Checkout Page Styling (iPhone 3.pdf) --- 
+   ----------------------------------------------------------------- */
+
+.checkout-page {
+    padding: 20px;
+    padding-bottom: 120px; /* Swipe button ke liye space */
+    max-width: 450px; 
+    margin: 0 auto;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: 15px;
+    cursor: pointer;
+    padding: 0;
+    color: #333;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.greeting-small {
+    font-size: 14px;
+    color: #666;
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+/* Cart Items List */
+.cart-items-list-checkout {
+    margin-bottom: 20px;
+}
+
+.checkout-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.item-details-checkout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-quantity-prefix {
+    font-weight: bold;
+    color: #ff9900;
+}
+
+.item-name-checkout {
+    font-weight: 500;
+}
+
+.remove-item-button {
+    background-color: #f1f1f1;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.item-price-checkout {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Cooking Instructions Button */
+.cooking-instructions-section {
+    margin: 20px 0;
+}
+
+.add-instructions-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+}
+
+.instructions-display {
+    text-align: center;
+    padding: 5px;
+    color: green;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* Toggle Buttons */
+.order-type-toggle {
+    display: flex;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.toggle-button {
+    flex-grow: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background-color 0.2s;
+}
+
+.toggle-button.active {
+    background-color: #000;
+    color: white;
+}
+
+/* Form Styling */
+.section-heading {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.checkout-form-container input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+    outline: none;
+}
+
+/* Price Summary */
+.price-summary-container {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #666;
+}
+
+.grand-total-row {
+    font-weight: bold;
+    font-size: 18px;
+    color: #000;
+    margin-top: 15px;
+}
+
+.delivery-time-message {
+    text-align: center;
+    font-size: 14px;
+    color: green;
+    margin: 20px 0;
+}
+
+/* Swipe to Order Section */
+.swipe-to-order-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.swipe-button {
+    width: 100%;
+    max-width: 450px; 
+    padding: 18px;
+    background-color: #ff9900; /* Orange/Accent color */
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.swipe-button.swiped {
+    background-color: #008000; /* Green after swipe */
+}
+
+
+/* -----------------------------------------------------------------
+   --- Instructions Page Styling (iPhone 4.pdf) --- 
+   ----------------------------------------------------------------- */
+
+.instructions-page {
+    padding: 20px;
+    max-width: 450px; 
+    margin: 0 auto;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.instructions-page .back-button {
+    /* Using X for cancel as per design */
+    font-size: 30px;
+    color: #000;
+}
+
+.instructions-page .page-header {
+    justify-content: space-between;
+}
+
+.disclaimer {
+    font-size: 14px;
+    color: #999;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.instructions-textarea {
+    width: 100%;
+    flex-grow: 1; /* Textarea puri height lega */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    resize: none;
+    box-sizing: border-box;
+    min-height: 200px;
+    margin-bottom: 20px;
+}
+
+.save-instructions-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #000; 
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: auto; /* Button ko bottom mein dhakelne ke liye */
+}
+
+/* -----------------------------------------------------------------
+   --- Thank You Page Styling --- 
+   ----------------------------------------------------------------- */
+.thankyou-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    background-color: #e6ffe6; /* Light green background */
+    color: #008000;
+}
+
+.thankyou-page h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.thankyou-page p {
+    font-size: 18px;
+    color: #333;
+}
