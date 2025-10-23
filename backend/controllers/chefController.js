@@ -1,30 +1,30 @@
 const Chef = require('../models/Chef');
 
-exports.getChefs = async (req, res) => {
+exports.getChefs = async (req, res, next) => {
   try {
     const chefs = await Chef.find();
     res.json({ success: true, chefs });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-exports.createChef = async (req, res) => {
+exports.createChef = async (req, res, next) => {
   try {
     const chef = new Chef(req.body);
     await chef.save();
     res.json({ success: true, chef });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-exports.deleteChef = async (req, res) => {
+exports.deleteChef = async (req, res, next) => {
   try {
     const { id } = req.params;
     await Chef.findByIdAndDelete(id);
     res.json({ success: true, message: 'Chef deleted successfully' });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };

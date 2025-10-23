@@ -1,21 +1,18 @@
 const Table = require('../models/Table');
 
-// 🪑 Get All Tables (Dashboard)
-exports.getTables = async (req, res) => {
+exports.getTables = async (req, res, next) => {
   try {
     const tables = await Table.find().sort({ tableNumber: 1 });
     res.status(200).json({ success: true, tables });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-//  Create New Table (Dashboard)
-exports.createTable = async (req, res) => {
+exports.createTable = async (req, res, next) => {
   try {
     const { chairs, tableName } = req.body;
 
-    // ✅ Find last table number
     const lastTable = await Table.findOne().sort({ tableNumber: -1 });
     const nextTableNumber = lastTable ? lastTable.tableNumber + 1 : 1;
 
@@ -33,12 +30,11 @@ exports.createTable = async (req, res) => {
     await table.save();
     res.status(201).json({ success: true, table });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-// ❌ Delete Table (Dashboard)
-exports.deleteTable = async (req, res) => {
+exports.deleteTable = async (req, res, next) => {
   try {
     const { id } = req.params;
     const table = await Table.findById(id);
@@ -53,7 +49,6 @@ exports.deleteTable = async (req, res) => {
 
     await Table.findByIdAndDelete(id);
 
-    // ✅ Re-number remaining tables
     const remaining = await Table.find().sort({ tableNumber: 1 });
     for (let i = 0; i < remaining.length; i++) {
       remaining[i].tableNumber = i + 1;
@@ -62,12 +57,11 @@ exports.deleteTable = async (req, res) => {
 
     res.status(200).json({ success: true, message: 'Table deleted and numbers reshuffled' });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-// 🔄 Update Table Status (Dashboard)
-exports.updateTableStatus = async (req, res) => {
+exports.updateTableStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -79,6 +73,6 @@ exports.updateTableStatus = async (req, res) => {
 
     res.status(200).json({ success: true, table });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };

@@ -3,35 +3,31 @@ const Table = require('../models/Table');
 const Client = require('../models/Client');
 const Chef = require('../models/Chef');
 
-// 🧾 Create New Order (User App)
-exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res, next) => {
   try {
     const {
       clientName,
       clientPhone,
       clientAddress,
       type,
-      tableNumber,
       items,
       cookingInstructions
     } = req.body;
 
-    // ✅ Unique Order ID
     const orderId = 'ORD' + Date.now();
+    const tableNumber = type === 'Dine In' ? req.body.tableNumber : null;
 
-    // ✅ Calculate totals
     const itemTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const deliveryCharge = type === 'Take Away' ? 50 : 0;
     const taxes = (itemTotal + deliveryCharge) * 0.05;
     const grandTotal = itemTotal + deliveryCharge + taxes;
 
-    // ✅ Create new order
     const order = new Order({
       orderId,
       clientName,
       clientPhone,
       type,
-      tableNumber: type === 'Dine In' ? tableNumber : null,
+      tableNumber,
       items: items.map(item => ({ ...item, cookingInstructions })),
       itemTotal,
       deliveryCharge,
@@ -42,7 +38,6 @@ exports.createOrder = async (req, res) => {
 
     await order.save();
 
-    // ✅ Update or create client
     let client = await Client.findOne({ phone: clientPhone });
     if (!client) {
       client = new Client({
@@ -57,16 +52,13 @@ exports.createOrder = async (req, res) => {
     client.lastOrderAt = new Date();
     await client.save();
 
-    // ✅ Update table (if dine-in)
-    if (type === 'Dine In') {
+    if (type === 'Dine In' && tableNumber) {
       await Table.findOneAndUpdate(
         { tableNumber },
-        { status: 'Reserved', currentOrderId: order._id },
-        { new: true }
+        { status: 'Reserved', currentOrderId: order._id }
       );
     }
 
-    // ✅ Assign to least busy chef
     const chef = await Chef.findOne().sort({ ordersAssigned: 1 });
     if (chef) {
       chef.ordersAssigned += 1;
@@ -79,25 +71,22 @@ exports.createOrder = async (req, res) => {
 
     res.status(201).json({ success: true, order });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-// 📋 Get All Orders (Dashboard)
-exports.getOrders = async (req, res) => {
+exports.getOrders = async (req, res, next) => {
   try {
     const orders = await Order.find()
       .populate('assignedChef', 'name')
       .sort({ createdAt: -1 });
     res.status(200).json({ success: true, orders });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
-// 🔄 Update Order Status (Dashboard)
-exports.updateOrderStatus = async (req, res) => {
+exports.updateOrderStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -112,7 +101,6 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    // ✅ Free table if dine-in order done
     if (order.type === 'Dine In' && status === 'Done') {
       await Table.findOneAndUpdate(
         { tableNumber: order.tableNumber },
@@ -122,7 +110,6 @@ exports.updateOrderStatus = async (req, res) => {
 
     res.status(200).json({ success: true, order });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 };
