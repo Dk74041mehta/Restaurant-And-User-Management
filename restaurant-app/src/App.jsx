@@ -8,21 +8,19 @@ import Chart from 'chart.js/auto';
 
 // *** यहां सुधार किया गया है! ***
 // अब यह .env फ़ाइल से VITE_API_URL पढ़ेगा
-const BASE_URL = import.meta.env.VITE_API_URL; 
+const BASE_URL = 'https://restaurant-and-user-management.onrender.com/api'; 
+// const BASE_URL = import.meta.env.VITE_API_URL; // इसे कमेंट करें या हटा दें
 
 if (!BASE_URL) {
-  // अगर env variable नहीं मिला, तो console में error दिखाओ 
-  console.error("FATAL: VITE_API_URL is not defined in the environment. Please check your .env file.");
+  console.error("FATAL: BASE_URL is missing.");
 }
 
 const api = axios.create({
-  // BASE_URL का उपयोग करें
   baseURL: BASE_URL, 
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
 const getOverallAnalytics = async () => {
   const response = await api.get('/analytics');
   return response.data.analytics;
