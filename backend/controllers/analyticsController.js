@@ -14,7 +14,9 @@ exports.getAnalytics = async (req, res, next) => {
     const totalRevenueAgg = await Order.aggregate([
       { $group: { _id: null, total: { $sum: "$grandTotal" } } }
     ]);
-    const totalRevenue = totalRevenueAgg?.total || 0;
+    // const totalRevenue = totalRevenueAgg?.total || 0;
+    const totalRevenue = totalRevenueAgg[0]?.total || 0;
+
 
     const totalClients = await Client.countDocuments();
     const totalChefs = await Chef.countDocuments();
