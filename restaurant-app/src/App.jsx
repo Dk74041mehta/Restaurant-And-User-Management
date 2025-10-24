@@ -7,7 +7,7 @@ import Chart from 'chart.js/auto';
 // ----------------------------------------------------------------------
 
 // Ensure your backend is running on http://localhost:5000
-const BASE_URL = 'http://localhost:5000/api'; 
+const BASE_URL = 'https://restaurant-and-user-management.onrender.com/'; 
 
 const api = axios.create({
   baseURL: BASE_URL,
