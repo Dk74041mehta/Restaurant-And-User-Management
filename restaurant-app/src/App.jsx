@@ -6,11 +6,18 @@ import Chart from 'chart.js/auto';
 // 1. API Configuration and Functions (Integrated from api/api.js)
 // ----------------------------------------------------------------------
 
-// Ensure your backend is running on http://localhost:5000
-const BASE_URL = 'https://restaurant-and-user-management.onrender.com/'; 
+// *** यहां सुधार किया गया है! ***
+// अब यह .env फ़ाइल से VITE_API_URL पढ़ेगा
+const BASE_URL = import.meta.env.VITE_API_URL; 
+
+if (!BASE_URL) {
+  // अगर env variable नहीं मिला, तो console में error दिखाओ 
+  console.error("FATAL: VITE_API_URL is not defined in the environment. Please check your .env file.");
+}
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  // BASE_URL का उपयोग करें
+  baseURL: BASE_URL, 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -106,6 +113,13 @@ function App() {
   // --- Initial Data Fetching ---
   useEffect(() => {
     const fetchData = async () => {
+      // Check if BASE_URL is available before fetching
+      if (!BASE_URL) {
+          setError("API URL is missing. Check VITE_API_URL in .env file.");
+          setLoading(false);
+          return;
+      }
+      
       try {
         const [overall, chefList, tableList, orderList] = await Promise.all([
           getOverallAnalytics(),
@@ -120,7 +134,8 @@ function App() {
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
-        setError("Could not load dashboard data. Check backend connection.");
+        // Error message updated to be more descriptive
+        setError("Could not load dashboard data. Check backend connection or the API URL.");
         setLoading(false);
       }
     };
@@ -138,7 +153,7 @@ function App() {
       }
     };
     
-    // Only fetch if initial data is loaded
+    // Only fetch if initial data is loaded and no general error
     if (!loading && !error) {
         fetchRevenueData();
     }
