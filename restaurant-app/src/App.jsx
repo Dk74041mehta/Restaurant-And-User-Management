@@ -6,14 +6,11 @@ import Chart from 'chart.js/auto';
 // 1. API Configuration and Functions (Integrated from api/api.js)
 // ----------------------------------------------------------------------
 
-// *** यहां सुधार किया गया है! ***
-// अब यह .env फ़ाइल से VITE_API_URL पढ़ेगा
+// *** BASE_URL अब सीधे Render API पर सेट है ***
 const BASE_URL = 'https://restaurant-and-user-management.onrender.com/api'; 
-// const BASE_URL = import.meta.env.VITE_API_URL; // इसे कमेंट करें या हटा दें
 
-if (!BASE_URL) {
-  console.error("FATAL: BASE_URL is missing.");
-}
+// नोट: अब हम import.meta.env.VITE_API_URL का उपयोग नहीं कर रहे हैं,
+// इसलिए FATAL error नहीं आएगा।
 
 const api = axios.create({
   baseURL: BASE_URL, 
@@ -21,6 +18,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
 const getOverallAnalytics = async () => {
   const response = await api.get('/analytics');
   return response.data.analytics;
@@ -111,12 +109,7 @@ function App() {
   // --- Initial Data Fetching ---
   useEffect(() => {
     const fetchData = async () => {
-      // Check if BASE_URL is available before fetching
-      if (!BASE_URL) {
-          setError("API URL is missing. Check VITE_API_URL in .env file.");
-          setLoading(false);
-          return;
-      }
+      // BASE_URL चेक हटा दिया गया है क्योंकि यह हार्डकोडेड है।
       
       try {
         const [overall, chefList, tableList, orderList] = await Promise.all([
@@ -132,8 +125,8 @@ function App() {
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
-        // Error message updated to be more descriptive
-        setError("Could not load dashboard data. Check backend connection or the API URL.");
+        // अब यह एरर CORS या Backend डाउनटाइम को इंगित करेगा।
+        setError("Could not load dashboard data. Please check your backend's CORS configuration and server status.");
         setLoading(false);
       }
     };
@@ -242,25 +235,25 @@ function App() {
         <div className="stats-cards-row">
           <StatCard
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>}
-            value={formatCurrency(analytics.totalRevenue)}
+            value={analytics?.totalRevenue ? formatCurrency(analytics.totalRevenue) : '₹0'}
             label="Total Revenue"
             bgColorClass="bg-red-400" iconColorClass="text-red-500"
           />
           <StatCard
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>}
-            value={analytics.totalOrders}
+            value={analytics?.totalOrders || 0}
             label="Total Orders"
             bgColorClass="bg-teal-400" iconColorClass="text-teal-500"
           />
           <StatCard
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
-            value={analytics.totalClients}
+            value={analytics?.totalClients || 0}
             label="Total Clients"
             bgColorClass="bg-orange-400" iconColorClass="text-orange-500"
           />
           <StatCard
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2l1.65 4.95 5.3 1.07-3.66 3.49 1.1 5.38-4.39-2.73-4.39 2.73 1.1-5.38L3 8.02l5.3-1.07L10 2z"></path></svg>}
-            value={analytics.totalChefs}
+            value={analytics?.totalChefs || 0}
             label="Total Chefs"
             bgColorClass="bg-blue-400" iconColorClass="text-blue-500"
           />
@@ -300,7 +293,7 @@ function App() {
                 {/* Total Revenue - Repeat for clarity */}
                 <div className="metric-box">
                   <span className="metric-label">Total Revenue</span>
-                  <span className="metric-value-lg">{formatCurrency(analytics.totalRevenue)}</span>
+                  <span className="metric-value-lg">{analytics?.totalRevenue ? formatCurrency(analytics.totalRevenue) : '₹0'}</span>
                 </div>
               </div>
             </div>
