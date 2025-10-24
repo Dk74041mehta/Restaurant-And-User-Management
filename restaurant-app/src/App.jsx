@@ -187,6 +187,7 @@ function App() {
   
   // --- Order Summary Calculation ---
   const calculateOrderSummary = () => {
+    // orders data is from the /orders endpoint
     const servedOrders = orders.filter(o => o.status === 'Served' || o.status === 'Done').length;
     const dineInOrders = orders.filter(o => o.type === 'Dine In').length;
     const takeawayOrders = orders.filter(o => o.type === 'Take Away').length;
@@ -194,6 +195,9 @@ function App() {
   };
 
   const orderSummary = calculateOrderSummary();
+
+  // --- Chef Workload Calculation (Moved out of JSX) ---
+  const maxOrders = chefs.length > 0 ? Math.max(...chefs.map(c => c.ordersAssigned)) : 1;
 
   if (loading) return <div className="loading-screen" style={{height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '24px'}}>Loading Dashboard...</div>;
   if (error) return <div className="error-screen" style={{height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'red', fontSize: '20px'}}>{error}</div>;
@@ -340,8 +344,6 @@ function App() {
             <div className="chart-section">
                 <h4 className="chart-title">Chef Workload (Orders Assigned)</h4>
                 <div className="horizontal-chart-container">
-                    {/* Max orders calculation for dynamic progress bar scaling */}
-                    const maxOrders = chefs.length > 0 ? Math.max(...chefs.map(c => c.ordersAssigned)) : 1;
                     
                     {chefs.sort((a, b) => b.ordersAssigned - a.ordersAssigned).map((chef) => (
                         <div key={chef._id} className="progress-item">
@@ -349,6 +351,7 @@ function App() {
                             <div className="progress-bar">
                                 <div 
                                     className="progress-fill" 
+                                    // maxOrders is now defined outside of JSX
                                     style={{ width: `${(chef.ordersAssigned / maxOrders) * 100}%` }} 
                                 ></div>
                             </div>
