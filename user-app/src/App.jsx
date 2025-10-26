@@ -1,457 +1,919 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  initializeApp
-} from 'firebase/app';
-import {
-  getAuth,
-  signInAnonymously,
-  signInWithCustomToken,
-  onAuthStateChanged
-} from 'firebase/auth';
-import {
-  getFirestore,
-  onSnapshot,
-  collection,
-  query,
-  setLogLevel,
-  doc,
-  setDoc,
-  getDocs,
-  serverTimestamp,
-  updateDoc
-} from 'firebase/firestore';
+import { Search, Plus, Minus, ArrowLeft, X, ChevronRight, CheckCircle } from 'lucide-react'; 
 
-// --- CONFIGURATION & FIREBASE SETUP ---
-// Global variables provided by the canvas environment
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+// --- MOCK DATA ---
+const MOCK_CATEGORIES = ['Pizza', 'Burger', 'Drink', 'French fries', 'Veggies', 'Desserts', 'Salads', 'Soups'];
+const MOCK_ITEMS = [
+  { id: 1, name: 'Capricciosa', price: 200, category: 'Pizza' },
+  { id: 2, name: 'Sicilian', price: 150, category: 'Pizza' },
+  { id: 3, name: 'Marinara', price: 90, category: 'Pizza' },
+  { id: 4, name: 'Pepperoni', price: 300, category: 'Pizza' },
+  { id: 5, name: 'Classic Beef Burger', price: 250, category: 'Burger' },
+  { id: 6, name: 'Crispy Fries', price: 120, category: 'French fries' },
+  { id: 7, name: 'Chicken Tenders', price: 280, category: 'Burger' },
+  { id: 8, name: 'Coke (Small)', price: 60, category: 'Drink' },
+  // Adding more items for infinite scroll simulation
+  { id: 9, name: 'Vegetable Pizza', price: 220, category: 'Pizza' },
+  { id: 10, name: 'Jalapeno Burger', price: 270, category: 'Burger' },
+  { id: 11, name: 'Cheesy Garlic Bread', price: 180, category: 'Veggies' },
+  { id: 12, name: 'Mineral Water', price: 40, category: 'Drink' },
+];
 
-// Mock Data for Initial UI Rendering
-const MOCK_DATA = {
-  analytics: {
-    totalChef: 4,
-    totalRevenue: 12000,
-    totalOrders: 20,
-    totalClients: 65,
-  },
-  summary: {
-    served: 9,
-    dineIn: 5,
-    takeAway: 6,
-  },
-  chefs: [
-    { name: 'Manesh', ordersTaken: 3 },
-    { name: 'Pritam', ordersTaken: 7 },
-    { name: 'Yash', ordersTaken: 5 },
-    { name: 'Tenzen', ordersTaken: 8 },
-  ],
-};
+// --- COMPONENTS ---
 
-// Placeholder for tables (30 total)
-const generateInitialTables = () => {
-  const tables = [];
-  for (let i = 1; i <= 30; i++) {
-    tables.push({
-      id: i,
-      name: `Table ${i}`,
-      capacity: i % 4 === 0 ? 8 : i % 3 === 0 ? 6 : i % 2 === 0 ? 4 : 2,
-      isReserved: i % 7 === 0 || i % 11 === 0, // Mocking some reserved tables
-      reservedFor: i % 7 === 0 ? 'Sharma' : i % 11 === 0 ? 'Vikas' : null,
-    });
-  }
-  return tables;
-};
+// 1. MenuItem Component
+const MenuItem = ({ item, count, onAdd, onRemove }) => (
+  <div className="menuItem">
+    <div className="itemImagePlaceholder"></div>
+    
+    <div className="itemInfo">
+      <h3 className="itemName">{item.name}</h3>
+      <p className="itemPrice">₹{item.price.toFixed(2)}</p>
+    </div>
 
-// --- UTILITY COMPONENTS ---
-
-const AnalyticsCard = ({ title, value, icon, bgColor, textColor }) => (
-  <div className={`p-4 rounded-xl shadow-lg flex flex-col items-start justify-between h-full transform transition duration-300 hover:scale-[1.02] ${bgColor}`}>
-    <div className="text-3xl font-bold">{icon}</div>
-    <div className={`mt-2 ${textColor}`}>
-      <div className="text-4xl font-extrabold">{value}</div>
-      <p className="text-xs font-semibold uppercase opacity-80 mt-1">{title}</p>
+    <div className="actionButtonContainer">
+      {count > 0 ? (
+        <div className="counter">
+          <button onClick={() => onRemove(item.id)} className="counterButton"><Minus size={16} /></button>
+          <span className="count">{count}</span>
+          <button onClick={() => onAdd(item.id)} className="counterButton"><Plus size={16} /></button>
+        </div>
+      ) : (
+        <button onClick={() => onAdd(item.id)} className="addButton">
+          <Plus size={16} />
+        </button>
+      )}
     </div>
   </div>
 );
 
-const ChefStatus = ({ name, orders }) => (
-  <div className="flex items-center justify-between py-2 border-b border-gray-100 hover:bg-gray-50 transition duration-150 px-2 rounded-lg">
-    <span className="font-medium text-gray-700">{name}</span>
-    <span className={`text-xl font-bold ${orders > 5 ? 'text-red-500' : 'text-green-500'} bg-white px-3 py-1 rounded-full shadow-inner`}>{orders}</span>
+// 2. CategoryBar Component
+const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => (
+  <div className="categoryBarContainer">
+    <div className="categoryList">
+      {categories.map((category) => (
+        <button
+          key={category}
+          className={`categoryButton ${selectedCategory === category ? 'selected' : ''}`}
+          onClick={() => onSelectCategory(category)}
+        >
+          {category}
+        </button>
+      ))}
+    </div>
   </div>
 );
 
-const TableItem = ({ table }) => {
-  const bgColor = table.isReserved ? 'bg-red-500/90' : 'bg-white';
-  const ringColor = table.isReserved ? 'ring-red-600' : 'ring-green-600';
-  const textColor = table.isReserved ? 'text-white' : 'text-gray-800';
+// 3. Header Component
+const Header = ({ searchTerm, setSearchTerm, currentPage }) => {
+    // Search is only on the Home page [SRD]
+    if (currentPage !== 'home') return null;
 
-  return (
-    <div
-      className={`relative p-4 h-24 rounded-xl shadow-md cursor-pointer transition duration-200 transform hover:scale-105 ${bgColor} ring-2 ${ringColor} ${textColor}`}
-      title={table.isReserved ? `Reserved for: ${table.reservedFor}` : 'Available'}
-    >
-      <div className="flex flex-col justify-between h-full">
-        <div className="text-xs font-semibold uppercase">
-          Table {table.id}
-        </div>
-        <div className="text-xl font-extrabold">
-          {table.name || `T-${table.id}`}
-        </div>
-        <div className="absolute bottom-1 right-1 text-sm opacity-90 font-medium">
-          Seats: {table.capacity}
+    return (
+      <div className="header">
+        <p className="greeting">Good evening</p>
+        <h1 className="title">Place your order here</h1>
+        
+        <div className="searchBar">
+          <Search size={20} className="searchIcon" />
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="searchInput"
+          />
         </div>
       </div>
-      {table.isReserved && (
-        <span className="absolute top-1 right-1 text-xs bg-black/30 text-white rounded-full px-2 py-0.5">Reserved</span>
+    );
+};
+
+// 4. HomePage Component
+const HomePage = ({ cart, selectedCategory, setSelectedCategory, searchTerm, setSearchTerm, handleAddToCart, handleRemoveFromCart, navigateTo }) => {
+  const filteredItems = MOCK_ITEMS
+    // SRD: Default selected category shows all items (handled by checking 'Pizza' as default)
+    .filter(item => selectedCategory === 'Pizza' ? true : item.category === selectedCategory) 
+    // SRD: Search applies to the selected category only
+    .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const totalItemsInCart = Object.values(cart).reduce((sum, count) => sum + count, 0);
+
+  return (
+    <div className="homeContainer">
+      <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} currentPage="home" />
+
+      <CategoryBar
+        categories={MOCK_CATEGORIES}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
+      
+      <div className="menuList">
+        <p className="categoryTitle">{selectedCategory}</p>
+        {filteredItems.map(item => (
+          <MenuItem
+            key={item.id}
+            item={item}
+            count={cart[item.id] || 0}
+            onAdd={handleAddToCart}
+            onRemove={handleRemoveFromCart}
+          />
+        ))}
+        {/* SRD: Infinite loading for items */}
+        <div className="infiniteLoader">Loading more items...</div> 
+      </div>
+
+      {totalItemsInCart > 0 && (
+        <button 
+          className="nextButton"
+          onClick={() => navigateTo('checkout')} 
+        >
+          Next ({totalItemsInCart} items)
+        </button>
       )}
     </div>
   );
 };
 
 
-// --- MAIN APP COMPONENT ---
-
-const App = () => {
-  const [db, setDb] = useState(null);
-  const [auth, setAuth] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-
-  const [analyticsData, setAnalyticsData] = useState(MOCK_DATA.analytics);
-  const [summaryData, setSummaryData] = useState(MOCK_DATA.summary);
-  const [chefData, setChefData] = useState(MOCK_DATA.chefs);
-  const [tables, setTables] = useState(generateInitialTables());
-  const [filter, setFilter] = useState('Daily');
-
-  // 1. Firebase Initialization and Authentication
-  useEffect(() => {
-    if (!firebaseConfig) {
-      console.error("Firebase config is missing.");
-      return;
-    }
-
-    try {
-      setLogLevel('debug');
-      const app = initializeApp(firebaseConfig);
-      const firestore = getFirestore(app);
-      const authService = getAuth(app);
-
-      setDb(firestore);
-      setAuth(authService);
-
-      // Authentication Listener
-      const unsubscribe = onAuthStateChanged(authService, async (user) => {
-        if (user) {
-          setUserId(user.uid);
-          console.log("User authenticated:", user.uid);
-        } else {
-          // If no user, sign in anonymously or with custom token
-          try {
-            if (initialAuthToken) {
-              const userCredential = await signInWithCustomToken(authService, initialAuthToken);
-              setUserId(userCredential.user.uid);
-            } else {
-              const userCredential = await signInAnonymously(authService);
-              setUserId(userCredential.user.uid);
-            }
-          } catch (error) {
-            console.error("Firebase auth failed:", error);
-            setUserId(null); // Ensure userId is null on failure
-          }
-        }
-        setIsAuthReady(true);
-      });
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.error("Firebase initialization failed:", error);
-      setIsAuthReady(true);
-    }
-  }, []);
-
-  // 2. Real-time Data Listeners (onSnapshot)
-  useEffect(() => {
-    if (!db || !userId || !isAuthReady) return;
-
-    // Collection path for public/shared restaurant data
-    const RESTAURANT_DATA_PATH = `artifacts/${appId}/public/data/restaurantData`;
-    const dataRef = doc(db, RESTAURANT_DATA_PATH, 'currentStatus');
-
-    // Listener for all dashboard data
-    const unsubscribeData = onSnapshot(dataRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setAnalyticsData(data.analytics || MOCK_DATA.analytics);
-        setSummaryData(data.summary || MOCK_DATA.summary);
-        setChefData(data.chefs || MOCK_DATA.chefs);
-        // Note: Tables should ideally come from a separate collection for easier management
-      } else {
-        console.log("No dashboard status found. Using mock data.");
-        // Optionally, create initial data here if it doesn't exist
-        // setDoc(dataRef, { analytics: MOCK_DATA.analytics, summary: MOCK_DATA.summary, chefs: MOCK_DATA.chefs, timestamp: serverTimestamp() }, { merge: true });
-      }
-    }, (error) => {
-      console.error("Error fetching restaurant status:", error);
-    });
-    
-    // Listener for Tables Collection (assuming tables are in a sub-collection for scalability)
-    const tablesCollectionRef = collection(db, `artifacts/${appId}/public/data/tables`);
-    const unsubscribeTables = onSnapshot(tablesCollectionRef, (snapshot) => {
-      if (!snapshot.empty) {
-        const updatedTables = snapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: parseInt(doc.id), // Assuming doc ID is the table number
-        }));
-        // Sort numerically
-        updatedTables.sort((a, b) => a.id - b.id);
-        setTables(updatedTables);
-      } else {
-        console.log("No custom tables found. Using initial mock tables.");
-        // In a real app, you'd populate the database with 30 tables initially
-      }
-    }, (error) => {
-      console.error("Error fetching tables:", error);
-    });
-
-    return () => {
-      unsubscribeData();
-      unsubscribeTables();
-    };
-  }, [db, userId, isAuthReady]); // Re-run effect if Firebase state changes
-
-  // Placeholder function for table configuration (to be implemented)
-  const handleCreateTable = (e) => {
-    e.preventDefault();
-    console.log("Create Table logic triggered.");
-    // Firestore logic to add a new table document
-  };
-
-  // State for the new table form
-  const [newTableName, setNewTableName] = useState('');
-  const [newTableChairs, setNewTableChairs] = useState(2);
-
-  // Simple Revenue Graph Placeholder (since we can't use d3 or recharts here)
-  const RevenueGraph = () => {
-    // Mock data points for a weekly trend
-    const weeklyData = [
-      { day: 'Mon', revenue: 1200 },
-      { day: 'Tue', revenue: 1800 },
-      { day: 'Wed', revenue: 1500 },
-      { day: 'Thur', revenue: 2200 },
-      { day: 'Fri', revenue: 3000 },
-      { day: 'Sat', revenue: 4500 },
-      { day: 'Sun', revenue: 3800 },
-    ];
-    const maxRevenue = Math.max(...weeklyData.map(d => d.revenue));
-
-    return (
-      <div className="h-40 flex items-end justify-between px-2 pt-2 bg-white/50 rounded-lg shadow-inner mt-4">
-        {weeklyData.map((d, index) => (
-          <div key={d.day} className="flex flex-col items-center h-full justify-end">
-            <div
-              className={`w-4 md:w-6 lg:w-8 rounded-t-full bg-blue-500 hover:bg-blue-600 transition-all duration-300`}
-              style={{ height: `${(d.revenue / maxRevenue) * 90}%` }}
-              title={`Revenue on ${d.day}: ₹${d.revenue}`}
-            ></div>
-            <span className="text-xs mt-1 text-gray-700 font-semibold">{d.day}</span>
-          </div>
-        ))}
+// 5. InstructionsModal Component (Helper for CheckoutPage)
+const InstructionsModal = ({ cookingInstructions, setCookingInstructions, setIsAddingInstructions }) => (
+    <div className="instructionsModalOverlay">
+      <div className="instructionsModal">
+        <div className="modalHeader">
+          <button className="modalClose" onClick={() => setIsAddingInstructions(false)}><X size={24} /></button>
+          <h3 className="modalTitle">Add Cooking instructions</h3>
+          <button className="modalNext" onClick={() => setIsAddingInstructions(false)}>Next</button>
+        </div>
+        <textarea
+          className="instructionsTextarea"
+          placeholder="Enter instructions here..."
+          value={cookingInstructions}
+          onChange={(e) => setCookingInstructions(e.target.value)}
+        />
+        <p className="instructionWarning">
+          The restaurant will try its best to follow your request. However, refunds or cancellations in this regard won't be possible.
+        </p>
       </div>
-    );
-  };
-
-  if (!isAuthReady) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-600">Loading Dashboard...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-inter">
-      {/* Header and Search */}
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-800 flex items-center">
-          <svg className="w-8 h-8 mr-2 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M5 4a1 1 0 00-2 0v6.586l-.293-.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0l5-5a1 1 0 00-1.414-1.414L15 10.586V4a1 1 0 00-2 0v6h-2V4a1 1 0 00-2 0v6H7V4z" />
-          </svg>
-          <span className="text-indigo-600">Q</span>Tech Restaurant
-        </h1>
-        <div className="relative w-full max-w-sm">
-          <input
-            type="text"
-            placeholder="Filter..."
-            className="w-full p-3 pl-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-md"
-          />
-          <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </header>
-
-      {/* Analytics Section */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4 border-b pb-2">Analytics Overview</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <AnalyticsCard
-            title="TOTAL CHEFS"
-            value={analyticsData.totalChef}
-            icon="👨‍🍳"
-            bgColor="bg-white"
-            textColor="text-gray-800"
-          />
-          <AnalyticsCard
-            title="TOTAL REVENUE"
-            value={`₹${(analyticsData.totalRevenue / 1000).toFixed(1)}K`}
-            icon="💰"
-            bgColor="bg-white"
-            textColor="text-green-600"
-          />
-          <AnalyticsCard
-            title="TOTAL ORDERS"
-            value={analyticsData.totalOrders}
-            icon="📋"
-            bgColor="bg-white"
-            textColor="text-indigo-600"
-          />
-          <AnalyticsCard
-            title="TOTAL CLIENTS"
-            value={analyticsData.totalClients}
-            icon="👤"
-            bgColor="bg-white"
-            textColor="text-red-500"
-          />
-        </div>
-      </section>
-
-      {/* Main Content Grid */}
-      <main className="grid grid-cols-12 gap-8">
-        {/* Left Column: Orders Summary and Graph */}
-        <div className="col-span-12 lg:col-span-8 space-y-8">
-          
-          {/* Orders Summary & Revenue */}
-          <div className="bg-white p-6 rounded-2xl shadow-xl">
-            <h3 className="text-xl font-bold text-gray-700 mb-4">Orders Summary (Revenue)</h3>
-            
-            {/* Summary Metrics */}
-            <div className="grid grid-cols-4 gap-4 mb-6 text-center">
-              <div className="p-3 bg-indigo-50 rounded-lg">
-                <p className="text-2xl font-extrabold text-indigo-600">{summaryData.served}</p>
-                <p className="text-xs font-semibold uppercase text-indigo-500 mt-1">Served</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <p className="text-2xl font-extrabold text-green-600">{summaryData.dineIn}</p>
-                <p className="text-xs font-semibold uppercase text-green-500 mt-1">Dine In</p>
-              </div>
-              <div className="p-3 bg-yellow-50 rounded-lg">
-                <p className="text-2xl font-extrabold text-yellow-600">{summaryData.takeAway}</p>
-                <p className="text-xs font-semibold uppercase text-yellow-500 mt-1">Take Away</p>
-              </div>
-              <div className="p-3 bg-red-50 rounded-lg">
-                <p className="text-2xl font-extrabold text-red-600">₹{analyticsData.totalRevenue}</p>
-                <p className="text-xs font-semibold uppercase text-red-500 mt-1">Revenue</p>
-              </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex space-x-2 bg-gray-100 p-1 rounded-full text-sm font-medium">
-                {['Daily', 'Weekly', 'Monthly', 'Yearly'].map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`py-2 px-4 rounded-full transition ${filter === f ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'}`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm font-semibold text-gray-500">Revenue Analysis ({filter})</p>
-            </div>
-
-            {/* Revenue Graph Placeholder */}
-            <RevenueGraph />
-
-          </div>
-
-          {/* Table Configuration Section */}
-          <div className="bg-white p-6 rounded-2xl shadow-xl">
-            <h3 className="text-xl font-bold text-gray-700 mb-4">Add/Configure Table</h3>
-            <form onSubmit={handleCreateTable} className="flex flex-col md:flex-row gap-4">
-              <input
-                type="text"
-                placeholder="Table Name (optional)"
-                value={newTableName}
-                onChange={(e) => setNewTableName(e.target.value)}
-                className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition"
-              />
-              <select
-                value={newTableChairs}
-                onChange={(e) => setNewTableChairs(parseInt(e.target.value))}
-                className="p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition"
-              >
-                {[2, 4, 6, 8].map(size => (
-                  <option key={size} value={size}>Chairs: {size}</option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 flex items-center justify-center"
-              >
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Create
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Right Column: Tables and Chef Status */}
-        <div className="col-span-12 lg:col-span-4 space-y-8">
-
-          {/* Tables View */}
-          <div className="bg-white p-6 rounded-2xl shadow-xl">
-            <h3 className="text-xl font-bold text-gray-700 mb-4">Tables ({tables.filter(t => !t.isReserved).length} Available)</h3>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto pr-2">
-              {tables.map(table => (
-                <TableItem key={table.id} table={table} />
-              ))}
-            </div>
-            <div className="flex justify-start mt-4 space-x-4 text-sm font-medium">
-              <div className="flex items-center">
-                <span className="w-4 h-4 rounded-full bg-white ring-2 ring-green-600 mr-2"></span>
-                <span>Available</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-4 h-4 rounded-full bg-red-500 ring-2 ring-red-600 mr-2"></span>
-                <span>Reserved</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Chef Order Status */}
-          <div className="bg-white p-6 rounded-2xl shadow-xl">
-            <h3 className="text-xl font-bold text-gray-700 mb-4">Order Taken (Chefs)</h3>
-            <div className="space-y-3">
-              {chefData.map(chef => (
-                <ChefStatus key={chef.name} name={chef.name} orders={chef.ordersTaken} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-      
-      {/* Footer / User ID Display */}
-      <footer className="mt-8 pt-4 border-t text-sm text-gray-500 flex justify-between items-center">
-        <p>Dashboard App ID: <span className="font-mono text-gray-700">{appId}</span></p>
-        <p>User ID: <span className="font-mono text-gray-700">{userId || 'N/A (Auth Failed)'}</span></p>
-      </footer>
     </div>
-  );
+);
+
+// 6. CheckoutPage Component
+const CheckoutPage = ({ cart, navigateTo }) => {
+    const [orderType, setOrderType] = useState('takeaway'); // SRD: Default can be either, setting to takeaway
+    const [cookingInstructions, setCookingInstructions] = useState('');
+    const [isAddingInstructions, setIsAddingInstructions] = useState(false);
+    const [formData, setFormData] = useState({ 
+        name: 'Divya Sigatapu', 
+        phone: '9109109109', 
+        address: 'Flat no: 301, SVR Enclave, Hyper Nagar, vasavi...', 
+        members: 2 // For Dine In, SRD available sizes: 2, 4, 6, 8
+    });
+
+    // Calculate Order Summary
+    const itemTotal = Object.entries(cart).reduce((total, [itemId, count]) => {
+        const item = MOCK_ITEMS.find(i => i.id == itemId);
+        return total + (item ? item.price * count : 0);
+    }, 0);
+    
+    // Figma/SRD Mocked charges
+    const deliveryCharge = orderType === 'takeaway' ? 50 : 0; 
+    const taxes = 5.00; // Mocked
+    const grandTotal = itemTotal + deliveryCharge + taxes;
+
+    // SRD: Swipe to order (Simulated with click for now)
+    const handleSwipeToOrder = () => {
+        // Here you would send the order data to Firestore/Backend
+        console.log("Order Placed:", { formData, cart, orderType, cookingInstructions, grandTotal });
+        navigateTo('thankyou');
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const renderOrderSummary = () => (
+        <div className="orderSummary">
+            <h3 className="summaryTitle">Order Summary</h3>
+            <div className="summaryLine">
+                <span>Item Total</span>
+                <span>₹{itemTotal.toFixed(2)}</span>
+            </div>
+            <div className="summaryLine">
+                <span>Delivery Charge</span>
+                <span>₹{deliveryCharge.toFixed(2)}</span>
+            </div>
+            <div className="summaryLine">
+                <span>Taxes</span>
+                <span>₹{taxes.toFixed(2)}</span>
+            </div>
+            <div className={`summaryLine grandTotal`}>
+                <span>Grand Total</span>
+                <span>₹{grandTotal.toFixed(2)}</span>
+            </div>
+        </div>
+    );
+
+    const renderDetailsForm = () => {
+        if (orderType === 'dinein') {
+            return (
+                <div className="detailsForm">
+                    <h3 className="summaryTitle">Enter Your Details (Dine In)</h3>
+                    <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="inputField" required />
+                    <input type="tel" name="phone" placeholder="Contact Phone" value={formData.phone} onChange={handleChange} className="inputField" required />
+                    <select name="members" value={formData.members} onChange={handleChange} className="inputField" required>
+                        <option value="" disabled>Number of Persons</option>
+                        {[2, 4, 6, 8].map(size => ( // SRD available sizes: 2, 4, 6, 8
+                            <option key={size} value={size}>{size} Persons</option>
+                        ))}
+                    </select>
+                </div>
+            );
+        }
+        // Takeaway Form
+        return (
+            <div className="detailsForm">
+                <h3 className="summaryTitle">Enter Your Details (Take Away)</h3>
+                <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="inputField" required />
+                <input type="tel" name="phone" placeholder="Contact Phone" value={formData.phone} onChange={handleChange} className="inputField" required />
+                <input type="text" name="address" placeholder="Complete Address" value={formData.address} onChange={handleChange} className="inputField" required />
+                {/* SRD: Show average delivery time (Mocked) */}
+                <p className="deliveryTime">Delivery in 42 mins</p>
+            </div>
+        );
+    };
+
+    return (
+        <div className="checkoutContainer">
+            <button className="backButton" onClick={() => navigateTo('home')}>
+                <ArrowLeft size={24} />
+            </button>
+            <h2 className="checkoutTitle">Checkout</h2>
+
+            {/* Order Type Switch */}
+            <div className="orderTypeToggle">
+                <button 
+                className={`toggleButton ${orderType === 'dinein' ? 'toggleSelected' : ''}`}
+                onClick={() => setOrderType('dinein')}
+                >
+                Dine In
+                </button>
+                <button 
+                className={`toggleButton ${orderType === 'takeaway' ? 'toggleSelected' : ''}`}
+                onClick={() => setOrderType('takeaway')}
+                >
+                Take Away
+                </button>
+            </div>
+
+            {/* Cooking Instructions Box */}
+            <div className="instructionsBox" onClick={() => setIsAddingInstructions(true)}>
+                <span className={cookingInstructions ? 'instructionTextFilled' : 'instructionTextPlaceholder'}>
+                    {cookingInstructions || "Add cooking instructions (optional)"}
+                </span>
+                <ChevronRight size={20} />
+            </div>
+
+            {/* Cart Items Summary */}
+            <div className="cartItemsSummary">
+                <h3 className="summaryTitle">Your Items</h3>
+                {Object.entries(cart).map(([itemId, count]) => {
+                const item = MOCK_ITEMS.find(i => i.id == itemId);
+                return item && (
+                    <div key={itemId} className="cartItemLine">
+                    <span>{count} x {item.name}</span>
+                    <span>₹{(item.price * count).toFixed(2)}</span>
+                    </div>
+                );
+                })}
+            </div>
+
+            {renderDetailsForm()}
+            {renderOrderSummary()}
+
+            {/* SRD: Swipe to Order Button */}
+            <div className="swipeToOrderBar" onClick={handleSwipeToOrder}>
+                <span>Swipe to Order</span>
+                <div className="swipeHandle">
+                    <ChevronRight size={20} color="#333" />
+                </div>
+            </div>
+            
+            {isAddingInstructions && (
+                <InstructionsModal 
+                    cookingInstructions={cookingInstructions} 
+                    setCookingInstructions={setCookingInstructions}
+                    setIsAddingInstructions={setIsAddingInstructions}
+                />
+            )}
+        </div>
+    );
 };
+
+// 7. ThankYouPage Component
+const ThankYouPage = ({ navigateTo, resetCart }) => {
+    const [redirectCount, setRedirectCount] = useState(3);
+
+    useEffect(() => {
+        if (redirectCount > 0) {
+            const timer = setTimeout(() => setRedirectCount(prev => prev - 1), 1000);
+            return () => clearTimeout(timer);
+        } else {
+            resetCart(); // Reset cart state
+            navigateTo('home'); // SRD: Redirect to / after 2 seconds (3 to 0 countdown)
+        }
+    }, [redirectCount, navigateTo, resetCart]);
+
+    return (
+        <div className="thankYouContainer">
+            <CheckCircle size={64} className="thankYouIcon" />
+            <h1 className="thankYouTitle">Thanks For Ordering</h1>
+            <p className="redirectText">Redirecting in {redirectCount}</p>
+        </div>
+    );
+};
+
+
+// 8. Main App Component
+const App = () => {
+    const [currentPage, setCurrentPage] = useState('home'); 
+    const [cart, setCart] = useState({ 1: 1, 4: 2 }); // Initial items for quick checkout testing
+    const [selectedCategory, setSelectedCategory] = useState('Pizza');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const navigateTo = (page) => setCurrentPage(page);
+
+    // Cart Handlers
+    const handleAddToCart = useCallback((itemId) => {
+      setCart(prevCart => ({ ...prevCart, [itemId]: (prevCart[itemId] || 0) + 1 }));
+    }, []);
+
+    const handleRemoveFromCart = useCallback((itemId) => {
+      setCart(prevCart => {
+        const newCount = (prevCart[itemId] || 0) - 1;
+        if (newCount <= 0) {
+          // Remove item entirely if count is zero or less
+          const { [itemId]: removed, ...rest } = prevCart;
+          return rest;
+        }
+        return { ...prevCart, [itemId]: newCount };
+      });
+    }, []);
+    
+    const resetCart = useCallback(() => {
+      setCart({});
+    }, []);
+
+    // --- Main Router Logic ---
+    let pageContent;
+
+    if (currentPage === 'checkout') {
+        // Only proceed if cart is not empty
+        if (Object.keys(cart).length === 0) {
+            // If cart is empty (e.g., after a reset), redirect back to home
+            pageContent = (
+                <HomePage 
+                    cart={cart}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    handleAddToCart={handleAddToCart}
+                    handleRemoveFromCart={handleRemoveFromCart}
+                    navigateTo={navigateTo}
+                />
+            );
+        } else {
+            pageContent = <CheckoutPage cart={cart} navigateTo={navigateTo} />;
+        }
+    } else if (currentPage === 'thankyou') {
+        pageContent = <ThankYouPage navigateTo={navigateTo} resetCart={resetCart} />;
+    } else {
+        // Default is Home Page
+        pageContent = (
+            <HomePage 
+                cart={cart}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                handleAddToCart={handleAddToCart}
+                handleRemoveFromCart={handleRemoveFromCart}
+                navigateTo={navigateTo}
+            />
+        );
+    }
+
+    // Always render the styles and the current page content
+    return (
+        <>
+            <style>{CSS_STYLES}</style>
+            {pageContent}
+        </>
+    );
+};
+
+// 9. CSS Styles (Integrated into App.jsx)
+const CSS_STYLES = `
+/* Global Reset and Base Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+}
+
+/* --- Global Layout / Container Styles --- */
+/* The main container limits the app to a typical mobile width */
+.homeContainer, .checkoutContainer, .thankYouContainer {
+    padding: 20px;
+    background-color: #f7f7f7; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 450px; 
+    margin: 0 auto;
+    position: relative; /* For fixed elements */
+}
+.thankYouContainer {
+    /* Override for thank you page to center content */
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+}
+
+
+/* --- Header Styles --- */
+.header {
+    margin-bottom: 20px;
+}
+
+.greeting {
+    font-size: 16px;
+    color: #888;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.searchBar {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.searchIcon {
+    color: #888;
+    margin-right: 10px;
+}
+
+.searchInput {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 0;
+    background-color: transparent;
+}
+
+/* --- CategoryBar Styles --- */
+.categoryBarContainer {
+    overflow-x: auto; 
+    white-space: nowrap;
+    margin: 5px 0 20px 0;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.categoryBarContainer::-webkit-scrollbar {
+    display: none;
+}
+
+.categoryList {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+}
+
+.categoryButton {
+    background-color: white;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.categoryButton.selected {
+    background-color: #333; /* Selected pill style */
+    color: white;
+    border-color: #333;
+    font-weight: 600;
+}
+
+/* --- Menu List & Item Styles --- */
+.menuList {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-bottom: 100px; 
+}
+
+.categoryTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.infiniteLoader {
+    text-align: center;
+    padding: 20px 0;
+    color: #999;
+}
+
+.menuItem {
+    display: flex;
+    background-color: white;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    align-items: center;
+}
+
+.itemImagePlaceholder {
+    width: 60px;
+    height: 60px;
+    background-color: #eee;
+    border-radius: 8px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.itemInfo {
+    flex-grow: 1;
+}
+
+.itemName {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.itemPrice {
+    font-size: 14px;
+    color: #4CAF50;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+.actionButtonContainer {
+    flex-shrink: 0;
+}
+
+.addButton {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #4CAF50; /* Green Add Button */
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4);
+}
+
+.counter {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.counterButton {
+    background-color: white;
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+    color: #4CAF50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.count {
+    padding: 0 5px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+}
+
+.nextButton {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px; 
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background-color: #4CAF50; /* Green button */
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+}
+
+
+/* --- Checkout Page Styles --- */
+.checkoutContainer {
+    padding-bottom: 100px; /* Space for swipe bar */
+}
+.checkoutTitle {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 20px 0;
+}
+
+.backButton {
+    background: none;
+    border: none;
+    color: #333;
+    padding: 0;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.orderTypeToggle {
+    display: flex;
+    justify-content: space-between;
+    background-color: white;
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.toggleButton {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background-color: transparent;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.toggleSelected {
+    background-color: #333; /* Selected style */
+    color: white;
+}
+
+.instructionsBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #444;
+}
+.instructionTextPlaceholder {
+    color: #999;
+    font-size: 15px;
+}
+.instructionTextFilled {
+    color: #333;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* --- Summary and Form Styles --- */
+.detailsForm, .cartItemsSummary, .orderSummary {
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.summaryTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.inputField {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: #fcfcfc;
+}
+.inputField:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+.inputField::placeholder {
+    color: #aaa;
+}
+.deliveryTime {
+    font-size: 14px;
+    color: #4CAF50;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.cartItemLine, .summaryLine {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    padding: 5px 0;
+    color: #666;
+}
+.summaryLine:not(.grandTotal) {
+    border-bottom: 1px dotted #eee;
+}
+
+.grandTotal {
+    font-weight: 700;
+    color: #333;
+    border-top: 2px solid #333;
+    padding-top: 10px;
+    margin-top: 10px;
+    font-size: 18px;
+}
+
+/* --- Swipe to Order Styles (Based on Image) --- */
+.swipeToOrderBar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%; /* Full width of its container (max-width: 450px) */
+    max-width: 450px;
+    background-color: #333; /* Dark background */
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px 15px 0 0;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    height: 70px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    box-sizing: border-box; /* Include padding in width */
+}
+
+.swipeHandle {
+    position: absolute;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: #4CAF50; /* Green handle for contrast */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    /* Adding a slight animation to suggest swiping */
+    animation: swipeHint 1.5s infinite;
+}
+
+@keyframes swipeHint {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
+
+/* --- Cooking Instructions Modal Styles --- */
+.instructionsModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; 
+    z-index: 1000;
+}
+
+.instructionsModal {
+    background: white;
+    width: 100%;
+    max-width: 450px;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.modalClose, .modalNext {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #333;
+    font-weight: 600;
+}
+.modalNext {
+    color: #4CAF50;
+    font-size: 16px;
+}
+.modalTitle {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.instructionsTextarea {
+    width: 100%;
+    height: 150px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    resize: none;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+.instructionWarning {
+    font-size: 12px;
+    color: #f44336; 
+    padding: 10px;
+    background-color: #fff3f3;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+
+/* --- Thank You Page Styles (Centered and Clean) --- */
+.thankYouIcon {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.thankYouTitle {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.redirectText {
+    font-size: 16px;
+    color: #666;
+}
+`;
 
 export default App;
