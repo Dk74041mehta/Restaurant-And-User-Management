@@ -2,10 +2,7 @@ const Order = require('../models/Order');
 const Client = require('../models/Client');
 const Chef = require('../models/Chef');
 
-/**
- * @desc  Get overall analytics for dashboard
- * @route GET /api/analytics
- */
+// GET /api/analytics
 
 exports.getAnalytics = async (req, res, next) => {
   try {
@@ -35,10 +32,7 @@ exports.getAnalytics = async (req, res, next) => {
   }
 };
 
-/**
- * @desc Get filtered analytics (Daily, Weekly, Monthly, Yearly)
- * @route GET /api/analytics/filter?type=daily|weekly|monthly|yearly
- */
+//  GET /api/analytics/filter
 
 exports.getFilteredAnalytics = async (req, res, next) => {
   try {
