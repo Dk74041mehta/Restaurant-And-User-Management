@@ -1,0 +1,44 @@
+// src/components/Sidebar/Sidebar.jsx
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import './Sidebar.css';
+
+// आप यहाँ अपने icons import कर सकते हैं
+// import DashboardIcon from '../../assets/dashboard-icon.svg';
+
+const Sidebar = () => {
+  return (
+    <nav className="sidebar">
+      <div className="sidebar-logo">
+        {/* आपका लोगो यहाँ */}
+        Logo
+      </div>
+      <ul className="sidebar-nav">
+        <li>
+          {/* NavLink 'active' class को खुद हैंडल करता है */}
+          <NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            {/* <img src={DashboardIcon} alt="Dashboard" /> */}
+            <span>Dashboard</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/order-line" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            <span>Order Line</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/tables" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            <span>Tables</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/menu" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            <span>Menu</span>
+          </NavLink>
+        </li>
+      </ul>
+    </nav>
+  );
+};
+
+export default Sidebar;
