@@ -14,14 +14,14 @@ const getTables = () => {
   return data ? JSON.parse(data) : [];
 };
 
+// टेबल को सेव करते समय Sequential Numbering सुनिश्चित करें
 const saveTables = (tables) => {
-  // फ़िल्टर और Sequential Numbering (SRD Requirement)
   const reindexedTables = tables
     .filter(t => t && t.chairs && t.chairs > 0) 
     .map((table, index) => ({
       ...table,
-      id: index + 1, 
-      number: String(index + 1).padStart(2, '0'), 
+      id: index + 1, // नया sequential ID
+      number: String(index + 1).padStart(2, '0'), // 01, 02, 03...
     }));
   
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reindexedTables));
@@ -37,7 +37,7 @@ const Sidebar = () => (
     <nav className="sidebar">
         <div className="sidebar-logo">🍽️ Company Logo</div> 
         <ul className="sidebar-nav">
-            {/* UPDATED LINKS as per user request */}
+            {/* Nav Links as per user request */}
             <li><NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Analytics</span></NavLink></li>
             <li><NavLink to="/tables" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Chairs</span></NavLink></li>
             <li><NavLink to="/order-line" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Order Line</span></NavLink></li>
@@ -57,10 +57,10 @@ const AppLayout = () => (
 
 
 // =======================================================
-// 3. Dashboard Components (Desktop - 1)
+// 3. Dashboard Components (Desktop - 1: Analytics)
 // =======================================================
 
-// A. Top 4 Summary Cards (TOTAL CHEF, REVENUE, ORDERS, CLIENTS)
+// A. Top 4 Summary Cards (Horizontal)
 const TopStatsCard = ({ title, count, icon }) => (
     <div className="top-stats-card card-style">
         <span className="card-icon">{icon}</span>
@@ -87,8 +87,7 @@ const TopSummaryRow = () => {
     );
 };
 
-
-// B. Order Summary 3 Cards (Served, Dine In, Take Away)
+// B. Order Summary 3 Cards
 const SummaryCard = ({ count, title }) => (
     <div className="summary-card card-style">
         <div className="card-count">{count}</div>
@@ -145,7 +144,6 @@ const RevenueChart = () => (
 // E. TableOverview Component (Dashboard Grid)
 const TableOverview = () => {
     const tables = getTables();
-    // अगर Local Storage में टेबल नहीं हैं, तो 30 डमी टेबल दिखाएँ
     const displayTables = tables.length > 0 ? tables : Array.from({ length: 30 }, (_, i) => ({ id: i + 1, number: String(i + 1).padStart(2, '0'), isReserved: i % 5 === 0, seats: 4 }));
 
     return (
@@ -170,7 +168,7 @@ const TableOverview = () => {
     );
 };
 
-// F. Chef Order List (Chef Name & Order Taken)
+// F. Chef Order List
 const ChefOrderList = () => {
     const chefData = [
         { name: 'Manesh', orders: 3 },
@@ -214,13 +212,13 @@ const Dashboard = () => {
                 <input type="text" placeholder="Filter..." className="search-filter-input" />
             </div>
 
-            {/* === 2. ROW 1: 4 TOP SUMMARY CARDS === */}
+            {/* === 2. ROW 1: 4 TOP SUMMARY CARDS (Horizontal) === */}
             <TopSummaryRow />
 
             {/* === 3. ROW 2: MAIN CONTENT (2 Columns) === */}
             <div className="dashboard-main-content">
                 
-                {/* LEFT COLUMN: Order Summary, Revenue Chart/Stats, Chef List */}
+                {/* LEFT COLUMN */}
                 <div className="stats-and-chart-column">
                     
                     {/* Order Summary (3 Cards) */}
@@ -236,7 +234,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                     
-                    {/* Revenue Section (Chart and Stats) */}
+                    {/* Revenue Section */}
                     <RevenueChart />
                     <StatsOverview />
                     
@@ -244,7 +242,7 @@ const Dashboard = () => {
                     <ChefOrderList />
                 </div>
                 
-                {/* RIGHT COLUMN: Tables Grid */}
+                {/* RIGHT COLUMN */}
                 <div className="table-overview-column">
                     <TableOverview />
                 </div>
@@ -268,11 +266,17 @@ const Tables = () => {
         setTables(getTables());
     }, []);
 
+    const handleToggleForm = () => {
+        if (tables.length >= 30) {
+            alert("Maximum 30 tables allowed. Please delete a table to add a new one.");
+            return;
+        }
+        setShowAddForm(prev => !prev);
+    };
+
     const handleCreateTable = (e) => {
         e.preventDefault();
         
-        if (chairCount < 2) return alert("Chair count must be 2, 4, 6, or 8.");
-
         const newTable = {
             name: tableName || null,
             chairs: chairCount,
@@ -288,27 +292,32 @@ const Tables = () => {
     };
 
     const handleDeleteTable = (id) => {
-        const updatedTables = tables.filter(table => table.id !== id);
-        const newTables = saveTables(updatedTables);
-        setTables(newTables);
+        if (window.confirm("Are you sure you want to delete this table?")) {
+            const updatedTables = tables.filter(table => table.id !== id);
+            const newTables = saveTables(updatedTables); // This re-indexes
+            setTables(newTables);
+        }
     };
     
     const availableSizes = [2, 4, 6, 8];
+    
+    // Default 30 dummy tables if local storage is empty
+    const displayTables = tables.length > 0 ? tables : Array.from({ length: 30 }, (_, i) => ({
+        id: i + 1,
+        number: String(i + 1).padStart(2, '0'),
+        chairs: 4,
+        isReserved: false, 
+        isDummy: true
+    }));
 
     return (
         <div className="tables-container page-padding">
             <header className="tables-header">
                 <h1>Tables Management</h1>
-                <button 
-                    className="add-table-btn" 
-                    onClick={() => setShowAddForm(prev => !prev)}
-                >
-                    {showAddForm ? 'Cancel' : '+ Add New Table'}
-                </button>
             </header>
 
-            {/* Add New Table Form */}
-            {showAddForm && (
+            {/* Add New Table Form (Inline) */}
+            {showAddForm && tables.length < 30 && (
                 <form onSubmit={handleCreateTable} className="add-table-form-container card-style">
                     <h3>Create New Table</h3>
                     <div className="form-group">
@@ -316,7 +325,7 @@ const Tables = () => {
                         <input
                             id="tableName"
                             type="text"
-                            placeholder="Enter table name"
+                            placeholder="Enter table name (e.g., Corner Table)"
                             value={tableName}
                             onChange={(e) => setTableName(e.target.value)}
                         />
@@ -338,15 +347,36 @@ const Tables = () => {
                         </div>
                     </div>
 
-                    <button type="submit" className="create-btn">Create</button>
+                    <div className="form-actions">
+                         <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>Cancel</button>
+                         <button type="submit" className="create-btn">Create Table</button>
+                    </div>
                 </form>
             )}
 
             {/* Tables Grid */}
             <div className="tables-grid-full">
-                {tables.length > 0 ? (
-                    tables.map(table => (
-                        <div key={table.id} className="table-item-full card-style">
+                
+                {/* 1. Add Table Card (if less than 30 and form not open) */}
+                {tables.length < 30 && !showAddForm && (
+                    <div 
+                        className="add-table-placeholder card-style"
+                        onClick={handleToggleForm}
+                    >
+                        <span className="plus-icon">+</span>
+                        <span>Add New Table</span>
+                    </div>
+                )}
+                
+                {/* 2. Dynamic Table Cards (Real or Dummy) */}
+                {(tables.length > 0 ? tables : displayTables).map(table => (
+                    <div 
+                        key={table.id} 
+                        className={`table-item-full card-style ${table.isReserved ? 'reserved' : 'available'} ${table.isDummy ? 'dummy' : ''}`}
+                    >
+                        
+                        {/* Top Right: Delete Button (Only for real tables) */}
+                        {!table.isDummy && (
                             <button 
                                 className="delete-btn" 
                                 onClick={() => handleDeleteTable(table.id)}
@@ -355,17 +385,21 @@ const Tables = () => {
                             >
                                 <span className="delete-icon">✕</span>
                             </button>
-                            
-                            <span className="table-number">Table {table.number}</span>
-                            <span className="table-chairs">Chairs: {table.chairs}</span>
-                            <span className="table-status">
-                                {table.isReserved ? 'RESERVED' : 'AVAILABLE'}
-                            </span>
+                        )}
+                        
+                        {/* Center: Table Name and Number */}
+                        <div className="table-center-content">
+                            <span className="table-number-main">{table.number}</span>
+                            <span className="table-name-display">{table.name || 'Table'}</span>
                         </div>
-                    ))
-                ) : (
-                    <p className="no-tables-msg">Please use the "Add New Table" button to create tables.</p>
-                )}
+                        
+                        {/* Bottom Info: Status and Chairs */}
+                        <div className="table-bottom-info">
+                             <span className="table-status-label">{table.isReserved ? 'RESERVED' : 'AVAILABLE'}</span>
+                            <span className="table-chairs-full">{table.chairs || 4} Chairs</span>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
@@ -401,7 +435,6 @@ const OrderCard = ({ order }) => (
 );
 
 const OrderLine = () => {
-    // डमी ऑर्डर डेटा
     const orders = [
         { id: 101, status: 'Processing', type: 'Dine In', table: '05', chef: 'Manesh', time: '10m', totalItems: 3, items: [{name: 'Biryani', qty: 1}, {name: 'Naan', qty: 2}] },
         { id: 102, status: 'Done', type: 'Take Away', chef: 'Pritam', time: '0m', totalItems: 5, items: [{name: 'Pizza', qty: 1}, {name: 'Coke', qty: 4}] },
@@ -455,7 +488,6 @@ const MenuItemCard = ({ item }) => (
 );
 
 const Menu = () => {
-    // डमी मेनू डेटा
     const menuItems = [
         { id: 1, name: 'Tandoori Roti', price: 50, category: 'Bread', stock: 50 },
         { id: 2, name: 'Chicken Biryani', price: 250, category: 'Rice', stock: 15 },
