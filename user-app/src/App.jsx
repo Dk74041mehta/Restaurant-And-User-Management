@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Minus, ArrowLeft, X, ChevronRight, CheckCircle } from 'lucide-react'; 
 
-// --- MOCK DATA ---
 const MOCK_CATEGORIES = ['Pizza', 'Burger', 'Drink', 'French fries', 'Veggies', 'Desserts', 'Salads', 'Soups'];
 const MOCK_ITEMS = [
   { id: 1, name: 'Capricciosa', price: 200, category: 'Pizza' },
@@ -19,9 +18,8 @@ const MOCK_ITEMS = [
   { id: 12, name: 'Mineral Water', price: 40, category: 'Drink' },
 ];
 
-// --- COMPONENTS ---
 
-// 1. MenuItem Component
+// MenuItem Component
 const MenuItem = ({ item, count, onAdd, onRemove }) => (
   <div className="menuItem">
     <div className="itemImagePlaceholder"></div>
@@ -47,7 +45,7 @@ const MenuItem = ({ item, count, onAdd, onRemove }) => (
   </div>
 );
 
-// 2. CategoryBar Component
+// CategoryBar Component
 const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => (
   <div className="categoryBarContainer">
     <div className="categoryList">
@@ -64,9 +62,9 @@ const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => (
   </div>
 );
 
-// 3. Header Component
+// Header Component
 const Header = ({ searchTerm, setSearchTerm, currentPage }) => {
-    // Search is only on the Home page [SRD]
+    // Search is only on the Home page
     if (currentPage !== 'home') return null;
 
     return (
@@ -88,12 +86,10 @@ const Header = ({ searchTerm, setSearchTerm, currentPage }) => {
     );
 };
 
-// 4. HomePage Component
+// HomePage Component
 const HomePage = ({ cart, selectedCategory, setSelectedCategory, searchTerm, setSearchTerm, handleAddToCart, handleRemoveFromCart, navigateTo }) => {
   const filteredItems = MOCK_ITEMS
-    // SRD: Default selected category shows all items (handled by checking 'Pizza' as default)
     .filter(item => selectedCategory === 'Pizza' ? true : item.category === selectedCategory) 
-    // SRD: Search applies to the selected category only
     .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const totalItemsInCart = Object.values(cart).reduce((sum, count) => sum + count, 0);
@@ -119,7 +115,6 @@ const HomePage = ({ cart, selectedCategory, setSelectedCategory, searchTerm, set
             onRemove={handleRemoveFromCart}
           />
         ))}
-        {/* SRD: Infinite loading for items */}
         <div className="infiniteLoader">Loading more items...</div> 
       </div>
 
@@ -136,7 +131,7 @@ const HomePage = ({ cart, selectedCategory, setSelectedCategory, searchTerm, set
 };
 
 
-// 5. InstructionsModal Component (Helper for CheckoutPage)
+// InstructionsModal Component (Helper for CheckoutPage)
 const InstructionsModal = ({ cookingInstructions, setCookingInstructions, setIsAddingInstructions }) => (
     <div className="instructionsModalOverlay">
       <div className="instructionsModal">
@@ -158,7 +153,7 @@ const InstructionsModal = ({ cookingInstructions, setCookingInstructions, setIsA
     </div>
 );
 
-// 6. CheckoutPage Component
+// CheckoutPage Component
 const CheckoutPage = ({ cart, navigateTo }) => {
     const [orderType, setOrderType] = useState('takeaway'); // SRD: Default can be either, setting to takeaway
     const [cookingInstructions, setCookingInstructions] = useState('');
@@ -167,7 +162,7 @@ const CheckoutPage = ({ cart, navigateTo }) => {
         name: 'Divya Sigatapu', 
         phone: '9109109109', 
         address: 'Flat no: 301, SVR Enclave, Hyper Nagar, vasavi...', 
-        members: 2 // For Dine In, SRD available sizes: 2, 4, 6, 8
+        members: 2 // For Dine In, available sizes: 2, 4, 6, 8
     });
 
     // Calculate Order Summary
@@ -176,14 +171,11 @@ const CheckoutPage = ({ cart, navigateTo }) => {
         return total + (item ? item.price * count : 0);
     }, 0);
     
-    // Figma/SRD Mocked charges
     const deliveryCharge = orderType === 'takeaway' ? 50 : 0; 
-    const taxes = 5.00; // Mocked
+    const taxes = 5.00; 
     const grandTotal = itemTotal + deliveryCharge + taxes;
 
-    // SRD: Swipe to order (Simulated with click for now)
     const handleSwipeToOrder = () => {
-        // Here you would send the order data to Firestore/Backend
         console.log("Order Placed:", { formData, cart, orderType, cookingInstructions, grandTotal });
         navigateTo('thankyou');
     };
@@ -238,7 +230,6 @@ const CheckoutPage = ({ cart, navigateTo }) => {
                 <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="inputField" required />
                 <input type="tel" name="phone" placeholder="Contact Phone" value={formData.phone} onChange={handleChange} className="inputField" required />
                 <input type="text" name="address" placeholder="Complete Address" value={formData.address} onChange={handleChange} className="inputField" required />
-                {/* SRD: Show average delivery time (Mocked) */}
                 <p className="deliveryTime">Delivery in 42 mins</p>
             </div>
         );
@@ -292,7 +283,6 @@ const CheckoutPage = ({ cart, navigateTo }) => {
             {renderDetailsForm()}
             {renderOrderSummary()}
 
-            {/* SRD: Swipe to Order Button */}
             <div className="swipeToOrderBar" onClick={handleSwipeToOrder}>
                 <span>Swipe to Order</span>
                 <div className="swipeHandle">
@@ -311,7 +301,7 @@ const CheckoutPage = ({ cart, navigateTo }) => {
     );
 };
 
-// 7. ThankYouPage Component
+// ThankYouPage Component
 const ThankYouPage = ({ navigateTo, resetCart }) => {
     const [redirectCount, setRedirectCount] = useState(3);
 
@@ -335,7 +325,7 @@ const ThankYouPage = ({ navigateTo, resetCart }) => {
 };
 
 
-// 8. Main App Component
+// Main App Component
 const App = () => {
     const [currentPage, setCurrentPage] = useState('home'); 
     const [cart, setCart] = useState({ 1: 1, 4: 2 }); // Initial items for quick checkout testing
@@ -365,13 +355,12 @@ const App = () => {
       setCart({});
     }, []);
 
-    // --- Main Router Logic ---
+    // Main Router Logic ---
     let pageContent;
 
     if (currentPage === 'checkout') {
         // Only proceed if cart is not empty
         if (Object.keys(cart).length === 0) {
-            // If cart is empty (e.g., after a reset), redirect back to home
             pageContent = (
                 <HomePage 
                     cart={cart}
@@ -414,7 +403,7 @@ const App = () => {
     );
 };
 
-// 9. CSS Styles (Integrated into App.jsx)
+// 9. CSS Styles 
 const CSS_STYLES = `
 /* Global Reset and Base Styles */
 body {
