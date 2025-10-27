@@ -1,24 +1,25 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import Sidebar from './components/Sidebar/Sidebar';
-import Sidebar from './components/Sidebar/Sidebar';
-import Dashboard from './pages/Dashboard/Dashboard';
+import Sidebar from './components/Sidebar/Sidebar'; // Sidebar कंपोनेंट
+import './index.css'; // Global CSS (अगर आप styles index.css में रख रहे हैं)
 
-// अपने पेज कंपोनेंट्स को यहाँ import करें (अभी के लिए हम डमी बना रहे हैं)
-// const Dashboard = () => <h2>Dashboard Page</h2>;
-// const OrderLine = () => <h2>Order Line Page</h2>;
-const OrderLine = () => <h2>Order Line Page</h2>;
-const Tables = () => <h2>Tables Page</h2>;
-const Menu = () => <h2>Menu Page</h2>;
+// PAGES IMPORTS
+import Dashboard from './pages/Dashboard/Dashboard'; 
+// Tables Management पेज (Desktop - 2.pdf) - अभी डमी
+const Tables = () => <h2>Tables Management Page</h2>; 
+// Order Line पेज (Desktop - 6.png) - अभी डमी
+const OrderLine = () => <h2>Order Line Page</h2>; 
+// Menu Management पेज (Desktop - 3.png) - अभी डमी
+const Menu = () => <h2>Menu Management Page</h2>; 
 
-// यह हमारा मेन लेआउट कंपोनेंट है
+// मुख्य लेआउट कंपोनेंट (Sidebar + Content Area)
 const AppLayout = () => {
   return (
     <div className="app-layout">
       <Sidebar />
       <main className="content-area">
-        {/* बाकी पेज यहाँ रेंडर होंगे */}
+        {/* Outlet यहाँ नेस्टेड राउट्स (Nested Routes) के पेज रेंडर करेगा */}
         <Outlet />
       </main>
     </div>
@@ -29,14 +30,25 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* हम AppLayout को मेन रूट बनाते हैं */}
+        {/* AppLayout को पैरेंट रूट (Parent Route) बनाया गया है */}
         <Route path="/" element={<AppLayout />}>
-          {/* नेस्टेड रूट्स (Nested Routes) */}
-          <Route index element={<Dashboard />} /> {/* index मतलब default route for "/" */}
+          
+          {/* Default Route: / */}
+          <Route index element={<Dashboard />} /> 
+          
+          {/* /order-line */}
           <Route path="order-line" element={<OrderLine />} />
+          
+          {/* /tables */}
           <Route path="tables" element={<Tables />} />
+          
+          {/* /menu */}
           <Route path="menu" element={<Menu />} />
+          
         </Route>
+        
+        {/* 404 (Optional) */}
+        <Route path="*" element={<h1>404 Not Found</h1>} />
       </Routes>
     </BrowserRouter>
   );
