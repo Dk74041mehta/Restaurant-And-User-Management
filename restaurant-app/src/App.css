@@ -1,6 +1,6 @@
 /* src/index.css */
 
-/* Global Reset and Styles */
+/* Global Variables */
 :root {
     --sidebar-width: 250px;
     --primary-color: #007bff;
@@ -25,10 +25,6 @@ h1, h2, h3, h4 {
     font-weight: 600;
 }
 
-.page-padding {
-    padding: 0; /* Padding content-area से आ रहा है */
-}
-
 /* Reusable Card Style */
 .card-style {
     background-color: var(--card-bg);
@@ -38,7 +34,7 @@ h1, h2, h3, h4 {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.search-input, .filter-dropdown {
+.search-input, .filter-dropdown, .search-filter-input {
     padding: 10px 14px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -50,11 +46,7 @@ h1, h2, h3, h4 {
 /* =======================================
 // 1. Sidebar and Layout CSS
 // ======================================= */
-
-.app-layout {
-    display: flex;
-}
-
+.app-layout { display: flex; }
 .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -68,42 +60,15 @@ h1, h2, h3, h4 {
     display: flex;
     flex-direction: column;
 }
-
-.sidebar-logo {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    text-align: center;
-    color: var(--primary-color);
-}
-
-.sidebar-nav {
-    list-style: none;
-    padding: 0 15px;
-    margin: 0;
-}
-
+.sidebar-logo { font-size: 20px; font-weight: bold; margin-bottom: 30px; text-align: center; color: var(--primary-color); }
+.sidebar-nav { list-style: none; padding: 0 15px; margin: 0; }
 .nav-link {
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    text-decoration: none;
-    color: #555;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-weight: 500;
+    display: flex; align-items: center; padding: 12px 15px; text-decoration: none;
+    color: #555; border-radius: 8px; margin-bottom: 10px; font-weight: 500;
     transition: background-color 0.2s;
 }
-
-.nav-link:hover {
-    background-color: #f0f4f7;
-}
-
-.nav-link.active {
-    background-color: var(--primary-color);
-    color: white;
-}
-
+.nav-link:hover { background-color: #f0f4f7; }
+.nav-link.active { background-color: var(--primary-color); color: white; }
 .content-area {
     margin-left: var(--sidebar-width);
     padding: 20px;
@@ -112,109 +77,84 @@ h1, h2, h3, h4 {
     min-height: 100vh;
 }
 
-
 /* =======================================
-// 2. Dashboard CSS
+// 2. Dashboard CSS (Analytics)
 // ======================================= */
 
-.dashboard-container {
-    width: 100%;
-}
+.dashboard-container { width: 100%; }
 
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
+/* --- Search Bar --- */
+.dashboard-top-header { margin-bottom: 25px; }
+.search-filter-input { width: 100%; box-sizing: border-box; }
 
-.header-left h2 {
-    font-size: 24px;
+/* --- Top 4 Summary Cards --- */
+.top-summary-row { display: flex; gap: 20px; margin-bottom: 30px; }
+.top-stats-card {
+    flex: 1; display: flex; align-items: center; min-width: 180px;
+    padding: 20px;
 }
+.top-stats-card .card-icon {
+    font-size: 30px; background-color: #f0f4f7; padding: 10px; border-radius: 50%;
+    margin-right: 15px;
+}
+.top-stats-card .card-details { line-height: 1.2; }
+.top-stats-card .card-count { font-size: 24px; font-weight: 700; color: #2c3e50; }
+.top-stats-card .card-title { font-size: 12px; color: #95a5a6; font-weight: 600; }
 
-.summary-cards-container {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 30px;
-}
+/* --- Main Content Layout --- */
+.dashboard-main-content { display: flex; gap: 20px; align-items: stretch; }
+.stats-and-chart-column { flex: 2; display: flex; flex-direction: column; gap: 20px; } /* Left Column (2/3 width) */
+.table-overview-column { flex: 1; } /* Right Column (1/3 width - Tables) */
 
-.summary-card {
-    flex: 1;
-    min-width: 150px;
-}
+/* --- Order Summary (3 Small Cards) --- */
+.order-summary-section .section-header { margin-bottom: 15px; }
+.order-summary-section .section-header h2 { font-size: 18px; }
+.summary-cards-container { display: flex; gap: 20px; }
+.summary-card { flex: 1; padding: 15px; } /* Smaller padding for this row */
+.card-count { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.card-title { font-size: 14px; }
 
-.card-count {
-    font-size: 38px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: #2c3e50;
+/* --- Chef List Card --- */
+.chef-list-card { height: fit-content; }
+.chef-list-card h3 { font-size: 18px; margin-bottom: 15px; }
+.chef-list-header {
+    display: flex; justify-content: space-between; font-weight: 700;
+    padding-bottom: 8px; border-bottom: 1px solid #ddd; font-size: 14px;
 }
+.chef-list { list-style: none; padding: 0; margin: 10px 0 0 0; }
+.chef-list li {
+    display: flex; justify-content: space-between; padding: 10px 0;
+    border-bottom: 1px solid #eee; font-size: 16px;
+}
+.chef-list li:last-child { border-bottom: none; }
+.chef-list li span:last-child { font-weight: 700; color: var(--primary-color); }
 
-.card-title {
-    font-size: 16px;
-    color: #95a5a6;
-    font-weight: 500;
-}
-
-.dashboard-main-content {
-    display: flex;
-    gap: 20px; 
-    align-items: stretch;
-}
-
-.stats-and-chart-column {
-    flex: 2; /* Approx 65% width */
-    display: flex;
-    flex-direction: column;
-    gap: 20px; 
-}
-
-.table-overview-column {
-    flex: 1; /* Approx 35% width */
-}
 
 /* --- Stats Overview (Progress Bars) --- */
 .stats-card h3 { margin-bottom: 20px; font-size: 20px; }
 .stat-item { margin-bottom: 15px; }
-.stat-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 500;
-}
-.progress-bar-container {
-    width: 100%;
-    height: 8px;
-    background-color: #f1f1f1;
-    border-radius: 4px;
-    overflow: hidden;
-}
+.stat-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
+.progress-bar-container { width: 100%; height: 8px; background-color: #f1f1f1; border-radius: 4px; overflow: hidden; }
 .progress-bar-fill { height: 100%; transition: width 0.5s ease; }
 
 /* --- Revenue Chart (Placeholder) --- */
 .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .chart-header h3 { font-size: 20px; }
-.chart-placeholder { height: 200px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
-.dummy-chart-line {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 180px; 
-    /* DUMMY VISUAL */
-    background: repeating-linear-gradient(to top, transparent, transparent 39px, #eee 40px, #eee 40px);
-    border-bottom: 1px solid #ccc;
-    opacity: 0.7;
+.chart-placeholder { height: 180px; position: relative; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
+.dummy-chart-line { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    background: repeating-linear-gradient(to top, transparent, transparent 39px, #eee 40px, #eee 40px); opacity: 0.7; 
 }
-.chart-labels { display: flex; justify-content: space-between; padding-top: 10px; font-size: 12px; color: #777; text-align: center; }
+.chart-labels { display: flex; justify-content: space-between; font-size: 12px; color: #777; text-align: center; }
 
-/* --- Table Overview (Dashboard) --- */
+/* --- Table Overview (Dashboard Grid) --- */
+.table-overview-card { height: 100%; } /* To make it fill the column height */
 .table-overview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.table-overview-header h3 { font-size: 20px; }
-.available-count { font-size: 14px; color: #999; }
 .available-count span { font-weight: bold; color: var(--success-color); }
 .tables-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-.table-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 10px 5px; border-radius: 8px; cursor: pointer; height: 60px;
+.table-item { 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    padding: 10px 5px; border-radius: 8px; cursor: pointer; height: 60px; 
 }
 .table-title { font-size: 10px; text-transform: uppercase; font-weight: 600; }
 .table-number { font-size: 18px; font-weight: 700; }
@@ -223,27 +163,19 @@ h1, h2, h3, h4 {
 
 
 /* =======================================
-// 3. Tables Management CSS (Desktop - 2.pdf)
+// 3. Tables Management CSS (Chairs)
 // ======================================= */
 
-.tables-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
+.tables-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .tables-header h1 { font-size: 28px; }
 
 .add-table-btn {
-    background-color: var(--primary-color);
-    color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
     font-weight: 600; transition: background-color 0.3s;
 }
 .add-table-btn:hover { background-color: #0056b3; }
 
-.add-table-form-container {
-    padding: 20px; margin-bottom: 25px;
-}
+.add-table-form-container { padding: 20px; margin-bottom: 25px; }
 .add-table-form-container h3 { margin-bottom: 15px; font-size: 20px; }
 
 .form-group { margin-bottom: 15px; }
@@ -255,38 +187,27 @@ h1, h2, h3, h4 {
     padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 6px;
     background-color: #f9f9f9; cursor: pointer; font-weight: 500;
 }
-.chair-option.active {
-    background-color: var(--primary-color);
-    color: white; border-color: var(--primary-color);
-}
+.chair-option.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
 
 .create-btn {
-    background-color: var(--success-color);
-    color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    background-color: var(--success-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
     font-weight: 600; transition: background-color 0.3s; margin-top: 10px;
 }
 .create-btn:hover { background-color: #1e7e34; }
 
 
 .tables-grid-full {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;
 }
 
 .table-item-full {
-    position: relative;
-    background-color: var(--card-bg);
-    padding: 20px;
-    text-align: center;
-    font-weight: 500;
+    position: relative; background-color: var(--card-bg); padding: 20px; text-align: center; font-weight: 500;
 }
 .table-item-full .table-number { font-size: 24px; font-weight: 700; display: block; margin-bottom: 5px; }
 .table-item-full .table-status { font-size: 12px; font-weight: 700; color: var(--success-color); }
 
 .delete-btn {
-    position: absolute; top: 5px; right: 5px;
-    background: none; border: none; color: var(--danger-color);
+    position: absolute; top: 5px; right: 5px; background: none; border: none; color: var(--danger-color);
     font-size: 18px; cursor: pointer; opacity: 0.7;
 }
 .delete-btn:hover { opacity: 1; }
@@ -294,25 +215,16 @@ h1, h2, h3, h4 {
 
 
 /* =======================================
-// 4. Order Line CSS (Desktop - 6.png)
+// 4. Order Line CSS (Desktop - 6)
 // ======================================= */
 
-.order-line-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
-}
+.order-line-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .order-line-header h1 { font-size: 28px; }
 .filter-options { display: flex; gap: 15px; }
 
-.orders-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
+.orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 
-.order-card {
-    border-left: 5px solid; /* Status color */
-}
-
+.order-card { border-left: 5px solid; } /* Status color */
 .order-card.processing { border-left-color: var(--warning-color); }
 .order-card.done { border-left-color: var(--success-color); }
 .order-card.new { border-left-color: var(--primary-color); }
@@ -324,38 +236,26 @@ h1, h2, h3, h4 {
 .order-type, .order-chef { font-size: 14px; margin: 5px 0; }
 
 .order-items-list { list-style: disc; padding-left: 20px; margin: 0 0 15px 0; font-size: 14px; }
-.order-items-list li { margin-bottom: 3px; }
 
 .order-footer { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #555; border-top: 1px solid #eee; padding-top: 10px; }
 
 
 /* =======================================
-// 5. Menu Management CSS (Desktop - 3.png)
+// 5. Menu Management CSS (Desktop - 3)
 // ======================================= */
 
-.menu-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
-}
+.menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .menu-header h1 { font-size: 28px; }
 .menu-actions { display: flex; gap: 15px; }
 
 .add-menu-btn {
-    background-color: var(--success-color);
-    color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    background-color: var(--success-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
     font-weight: 600; transition: background-color 0.3s;
 }
 
-.menu-items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
+.menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 
-.menu-item-card {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-}
+.menu-item-card { display: flex; align-items: center; padding: 15px; }
 
 .item-image-placeholder {
     width: 60px; height: 60px; background-color: #f0f4f7; border-radius: 8px;

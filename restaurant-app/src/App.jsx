@@ -9,21 +9,19 @@ import { BrowserRouter, Routes, Route, Outlet, NavLink } from 'react-router-dom'
 
 const STORAGE_KEY = 'RESTAURANT_TABLES';
 
-// Local Storage से टेबल्स डेटा लोड करें
 const getTables = () => {
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 };
 
-// टेबल्स को Local Storage में सेव करें और Sequential Numbering सुनिश्चित करें
 const saveTables = (tables) => {
-  // फ़िल्टर और री-इंडेक्सिंग (SRD Requirement: Deleting a table reshuffles numbering)
+  // फ़िल्टर और Sequential Numbering (SRD Requirement)
   const reindexedTables = tables
-    .filter(t => t && t.chairs && t.chairs > 0) // Invalid entries हटा दें
+    .filter(t => t && t.chairs && t.chairs > 0) 
     .map((table, index) => ({
       ...table,
-      id: index + 1, // नया sequential ID
-      number: String(index + 1).padStart(2, '0'), // Sequential number (01, 02, ...)
+      id: index + 1, 
+      number: String(index + 1).padStart(2, '0'), 
     }));
   
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reindexedTables));
@@ -32,18 +30,73 @@ const saveTables = (tables) => {
 
 
 // =======================================================
-// 2. Dashboard Components (Desktop - 1.pdf)
+// 2. Layout Components (Sidebar & AppLayout)
 // =======================================================
 
-// A. SummaryCard Component
+const Sidebar = () => (
+    <nav className="sidebar">
+        <div className="sidebar-logo">🍽️ Company Logo</div> 
+        <ul className="sidebar-nav">
+            {/* UPDATED LINKS as per user request */}
+            <li><NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Analytics</span></NavLink></li>
+            <li><NavLink to="/tables" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Chairs</span></NavLink></li>
+            <li><NavLink to="/order-line" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Order Line</span></NavLink></li>
+            <li><NavLink to="/menu" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Menu Management</span></NavLink></li>
+        </ul>
+    </nav>
+);
+
+const AppLayout = () => (
+    <div className="app-layout">
+        <Sidebar />
+        <main className="content-area">
+            <Outlet />
+        </main>
+    </div>
+);
+
+
+// =======================================================
+// 3. Dashboard Components (Desktop - 1)
+// =======================================================
+
+// A. Top 4 Summary Cards (TOTAL CHEF, REVENUE, ORDERS, CLIENTS)
+const TopStatsCard = ({ title, count, icon }) => (
+    <div className="top-stats-card card-style">
+        <span className="card-icon">{icon}</span>
+        <div className="card-details">
+            <div className="card-count">{count}</div>
+            <div className="card-title">{title}</div>
+        </div>
+    </div>
+);
+
+const TopSummaryRow = () => {
+    const data = [
+        { title: 'TOTAL CHEF', count: '04', icon: '👨‍🍳' },
+        { title: 'TOTAL REVENUE', count: '₹ 12K', icon: '💰' },
+        { title: 'TOTAL ORDERS', count: '20', icon: '📝' },
+        { title: 'TOTAL CLIENTS', count: '65', icon: '👥' },
+    ];
+    return (
+        <div className="top-summary-row">
+            {data.map((item, index) => (
+                <TopStatsCard key={index} {...item} />
+            ))}
+        </div>
+    );
+};
+
+
+// B. Order Summary 3 Cards (Served, Dine In, Take Away)
 const SummaryCard = ({ count, title }) => (
-    <div className="summary-card">
+    <div className="summary-card card-style">
         <div className="card-count">{count}</div>
         <div className="card-title">{title}</div>
     </div>
 );
 
-// B. StatsOverview Component (Progress Bars)
+// C. Revenue Stats Overview (Progress Bars)
 const StatsOverview = () => {
     const statsData = [
         { name: 'Take Away', percentage: 75, color: '#007bff' },
@@ -72,11 +125,11 @@ const StatsOverview = () => {
     );
 };
 
-// C. RevenueChart Component (Placeholder Graph)
+// D. RevenueChart Component (Placeholder Graph)
 const RevenueChart = () => (
     <div className="chart-card card-style">
         <div className="chart-header">
-            <h3>Revenue Chart</h3>
+            <h3>Revenue</h3>
             <div className="chart-filter">Daily</div>
         </div>
         <div className="chart-placeholder">
@@ -89,10 +142,11 @@ const RevenueChart = () => (
     </div>
 );
 
-// D. TableOverview Component (Dashboard Grid)
+// E. TableOverview Component (Dashboard Grid)
 const TableOverview = () => {
-    const tables = getTables(); // Local Storage से लाइव डेटा
-    const displayTables = tables.slice(0, 30); // Max 30 display करें
+    const tables = getTables();
+    // अगर Local Storage में टेबल नहीं हैं, तो 30 डमी टेबल दिखाएँ
+    const displayTables = tables.length > 0 ? tables : Array.from({ length: 30 }, (_, i) => ({ id: i + 1, number: String(i + 1).padStart(2, '0'), isReserved: i % 5 === 0, seats: 4 }));
 
     return (
         <div className="table-overview-card card-style">
@@ -101,26 +155,50 @@ const TableOverview = () => {
                 <p className="available-count">Availab <span>{displayTables.filter(t => !t.isReserved).length}</span></p>
             </div>
             <div className="tables-grid">
-                {displayTables.length > 0 ? (
-                    displayTables.map((table) => (
-                        <div 
-                            key={table.id} 
-                            className={`table-item ${table.isReserved ? 'reserved' : 'available'}`}
-                            title={`Table ${table.number} (${table.chairs} Chairs)`}
-                        >
-                            <span className="table-title">Table</span>
-                            <span className="table-number">{table.number}</span>
-                        </div>
-                    ))
-                ) : (
-                    <p className="no-tables-msg">Go to Tables page to create tables.</p>
-                )}
+                {displayTables.slice(0, 30).map((table) => (
+                    <div 
+                        key={table.id} 
+                        className={`table-item ${table.isReserved ? 'reserved' : 'available'}`}
+                        title={`Table ${table.number} (${table.seats} Chairs)`}
+                    >
+                        <span className="table-title">Table</span>
+                        <span className="table-number">{table.number}</span>
+                    </div>
+                ))}
             </div>
         </div>
     );
 };
 
-// E. Dashboard Page
+// F. Chef Order List (Chef Name & Order Taken)
+const ChefOrderList = () => {
+    const chefData = [
+        { name: 'Manesh', orders: 3 },
+        { name: 'Pritam', orders: 7 },
+        { name: 'Yash', orders: 5 },
+        { name: 'Tenzen', orders: 8 },
+    ];
+    return (
+        <div className="chef-list-card card-style">
+            <h3>Chef Name & Order Taken</h3>
+            <div className="chef-list-header">
+                <span>Chef Name</span>
+                <span>Order Taken</span>
+            </div>
+            <ul className="chef-list">
+                {chefData.map((chef, index) => (
+                    <li key={index}>
+                        <span>{chef.name}</span>
+                        <span>{String(chef.orders).padStart(2, '0')}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
+
+// G. Main Dashboard Page (Analytics)
 const Dashboard = () => {
     const summaryData = [
         { title: 'Served', count: '09' },
@@ -130,30 +208,43 @@ const Dashboard = () => {
     
     return (
         <div className="dashboard-container">
-            <div className="dashboard-header">
-                <div className="header-left">
-                    <h2>Order Summary</h2>
-                    <p>hijokpirngntop[gtgkoikokyhikoy[phokphnoy</p>
-                </div>
-                <div className="header-right">
-                    <select className="filter-dropdown">
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                    </select>
-                </div>
+            
+            {/* === 1. TOP HEADER + SEARCH BAR === */}
+            <div className="dashboard-top-header">
+                <input type="text" placeholder="Filter..." className="search-filter-input" />
             </div>
 
-            <div className="summary-cards-container">
-                {summaryData.map((item, index) => (
-                    <SummaryCard key={index} count={item.count} title={item.title} />
-                ))}
-            </div>
+            {/* === 2. ROW 1: 4 TOP SUMMARY CARDS === */}
+            <TopSummaryRow />
 
+            {/* === 3. ROW 2: MAIN CONTENT (2 Columns) === */}
             <div className="dashboard-main-content">
+                
+                {/* LEFT COLUMN: Order Summary, Revenue Chart/Stats, Chef List */}
                 <div className="stats-and-chart-column">
-                    <StatsOverview />
+                    
+                    {/* Order Summary (3 Cards) */}
+                    <div className="order-summary-section">
+                        <div className="section-header">
+                            <h2>Order Summary</h2>
+                            <p>hijokpirngntop[gtgkoikokyhikoy[phokphnoy</p>
+                        </div>
+                        <div className="summary-cards-container">
+                            {summaryData.map((item, index) => (
+                                <SummaryCard key={index} {...item} />
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {/* Revenue Section (Chart and Stats) */}
                     <RevenueChart />
+                    <StatsOverview />
+                    
+                    {/* Chef Name and Order Taken Card */}
+                    <ChefOrderList />
                 </div>
+                
+                {/* RIGHT COLUMN: Tables Grid */}
                 <div className="table-overview-column">
                     <TableOverview />
                 </div>
@@ -164,48 +255,44 @@ const Dashboard = () => {
 
 
 // =======================================================
-// 3. Tables Management Page (Desktop - 2.pdf)
+// 4. Tables Management Page (Chairs - Desktop - 2)
 // =======================================================
 
 const Tables = () => {
     const [tables, setTables] = useState(getTables());
     const [showAddForm, setShowAddForm] = useState(false);
-    const [chairCount, setChairCount] = useState(4); // Default
+    const [chairCount, setChairCount] = useState(4); 
     const [tableName, setTableName] = useState('');
     
     useEffect(() => {
-        // कंपोनेंट लोड होने पर Local Storage से डेटा लोड करें
         setTables(getTables());
     }, []);
 
     const handleCreateTable = (e) => {
         e.preventDefault();
         
+        if (chairCount < 2) return alert("Chair count must be 2, 4, 6, or 8.");
+
         const newTable = {
-            name: tableName || null, // Optional table name
+            name: tableName || null,
             chairs: chairCount,
-            isReserved: false, // Initially unreserved
+            isReserved: false,
         };
 
         const updatedTables = saveTables([...tables, newTable]);
         setTables(updatedTables);
         
-        // Form reset
         setTableName('');
         setChairCount(4);
         setShowAddForm(false);
     };
 
     const handleDeleteTable = (id) => {
-        // उस table को array से हटाएँ जिसका id मैच करता है
         const updatedTables = tables.filter(table => table.id !== id);
-        
-        // re-index और save करें
         const newTables = saveTables(updatedTables);
         setTables(newTables);
     };
     
-    // SRD: Available table sizes: 2, 4, 6, 8
     const availableSizes = [2, 4, 6, 8];
 
     return (
@@ -260,15 +347,12 @@ const Tables = () => {
                 {tables.length > 0 ? (
                     tables.map(table => (
                         <div key={table.id} className="table-item-full card-style">
-                            {/* Figma डिज़ाइन के अनुसार */}
                             <button 
                                 className="delete-btn" 
                                 onClick={() => handleDeleteTable(table.id)}
-                                // SRD: Reserved tables cannot be deleted (अभी simple delete है)
                                 disabled={table.isReserved} 
                                 title={table.isReserved ? 'Reserved tables cannot be deleted' : 'Delete Table'}
                             >
-                                {/* Delete Icon Placeholder */}
                                 <span className="delete-icon">✕</span>
                             </button>
                             
@@ -289,7 +373,7 @@ const Tables = () => {
 
 
 // =======================================================
-// 4. Order Line Page (Desktop - 6.png)
+// 5. Order Line Page (Desktop - 6)
 // =======================================================
 
 const OrderCard = ({ order }) => (
@@ -317,7 +401,7 @@ const OrderCard = ({ order }) => (
 );
 
 const OrderLine = () => {
-    // डमी ऑर्डर डेटा (Figma Desktop - 6.png के अनुसार)
+    // डमी ऑर्डर डेटा
     const orders = [
         { id: 101, status: 'Processing', type: 'Dine In', table: '05', chef: 'Manesh', time: '10m', totalItems: 3, items: [{name: 'Biryani', qty: 1}, {name: 'Naan', qty: 2}] },
         { id: 102, status: 'Done', type: 'Take Away', chef: 'Pritam', time: '0m', totalItems: 5, items: [{name: 'Pizza', qty: 1}, {name: 'Coke', qty: 4}] },
@@ -351,7 +435,7 @@ const OrderLine = () => {
 
 
 // =======================================================
-// 5. Menu Management Page (Desktop - 3.png)
+// 6. Menu Management Page (Desktop - 3)
 // =======================================================
 
 const MenuItemCard = ({ item }) => (
@@ -371,7 +455,7 @@ const MenuItemCard = ({ item }) => (
 );
 
 const Menu = () => {
-    // डमी मेनू डेटा (Figma Desktop - 3.png के अनुसार)
+    // डमी मेनू डेटा
     const menuItems = [
         { id: 1, name: 'Tandoori Roti', price: 50, category: 'Bread', stock: 50 },
         { id: 2, name: 'Chicken Biryani', price: 250, category: 'Rice', stock: 15 },
@@ -404,32 +488,6 @@ const Menu = () => {
         </div>
     );
 };
-
-
-// =======================================================
-// 6. Layout Components (Sidebar & AppLayout)
-// =======================================================
-
-const Sidebar = () => (
-    <nav className="sidebar">
-        <div className="sidebar-logo">🍽️ Admin Dashboard</div>
-        <ul className="sidebar-nav">
-            <li><NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Dashboard</span></NavLink></li>
-            <li><NavLink to="/order-line" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Order Line</span></NavLink></li>
-            <li><NavLink to="/tables" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Tables</span></NavLink></li>
-            <li><NavLink to="/menu" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Menu</span></NavLink></li>
-        </ul>
-    </nav>
-);
-
-const AppLayout = () => (
-    <div className="app-layout">
-        <Sidebar />
-        <main className="content-area">
-            <Outlet />
-        </main>
-    </div>
-);
 
 
 // =======================================================
