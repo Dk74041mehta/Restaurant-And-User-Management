@@ -275,6 +275,7 @@ const Tables = () => {
             alert(`Maximum ${MAX_TABLES} tables allowed. Please delete a table to add a new one.`);
             return;
         }
+        // Toggle the form visibility
         setShowAddForm(prev => !prev);
     };
 
@@ -409,8 +410,11 @@ const Tables = () => {
                             </button>
                         )}
                         
-                        {/* Center: Table Number */}
-                        <span className="table-number-pdf">{table.number}</span>
+                        {/* Center: Table Number and Label */}
+                        <div className="table-content-pdf">
+                            <span className="table-label-pdf">Table</span>
+                            <span className="table-number-pdf">{table.number}</span>
+                        </div>
                         
                         {/* Bottom Right: Chair Count (e.g., A 04) */}
                         <span className="table-chairs-pdf">
