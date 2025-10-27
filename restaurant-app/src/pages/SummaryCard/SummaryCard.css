@@ -1,0 +1,22 @@
+.summary-card {
+  flex: 1; /* यह सभी कार्ड्स को बराबर जगह देगा */
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  min-width: 150px; /* ताकि कार्ड्स बहुत छोटे न हों */
+}
+
+.card-count {
+  font-size: 38px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.card-title {
+  font-size: 16px;
+  color: #95a5a6; /* हल्का ग्रे टेक्स्ट */
+  font-weight: 500;
+}

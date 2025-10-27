@@ -2,9 +2,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar';
+import Sidebar from './components/Sidebar/Sidebar';
+import Dashboard from './pages/Dashboard/Dashboard';
 
 // अपने पेज कंपोनेंट्स को यहाँ import करें (अभी के लिए हम डमी बना रहे हैं)
 const Dashboard = () => <h2>Dashboard Page</h2>;
+// const OrderLine = () => <h2>Order Line Page</h2>;
 const OrderLine = () => <h2>Order Line Page</h2>;
 const Tables = () => <h2>Tables Page</h2>;
 const Menu = () => <h2>Menu Page</h2>;
