@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Dashboard.jsx
 import React from 'react';
 import SummaryCard from '../../components/SummaryCard/SummaryCard';
 import StatsOverview from '../../components/StatsOverview/StatsOverview';
@@ -15,7 +14,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* === हेडर === */}
       <div className="dashboard-header">
         <div className="header-left">
           <h2>Order Summary</h2>
@@ -30,7 +28,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* === समरी कार्ड्स === */}
       <div className="summary-cards-container">
         {summaryData.map((item, index) => (
           <SummaryCard 
@@ -41,16 +38,13 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* === मुख्य कंटेंट: Stats, Chart और Tables === */}
       <div className="dashboard-main-content">
         
-        {/* लेफ्ट कॉलम: Stats Overview and Revenue Chart */}
         <div className="stats-and-chart-column">
           <StatsOverview />
           <RevenueChart />
         </div>
         
-        {/* राइट कॉलम: Table Overview (Tables Grid) */}
         <div className="table-overview-column">
           <TableOverview />
         </div>

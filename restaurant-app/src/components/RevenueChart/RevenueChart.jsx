@@ -1,4 +1,3 @@
-// src/components/RevenueChart/RevenueChart.jsx
 import React from 'react';
 import './RevenueChart.css';
 
@@ -10,7 +9,6 @@ const RevenueChart = () => {
         <div className="chart-filter">Daily</div>
       </div>
       
-      {/* ग्राफ का विज़ुअल प्लेसहोल्डर */}
       <div className="chart-placeholder">
         <div className="dummy-chart-line"></div>
         

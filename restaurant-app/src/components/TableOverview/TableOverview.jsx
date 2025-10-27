@@ -1,8 +1,6 @@
-// src/components/TableOverview/TableOverview.jsx
 import React from 'react';
 import './TableOverview.css';
 
-// 30 टेबल्स का डमी डेटा
 const tables = Array.from({ length: 30 }, (_, i) => ({
   id: i + 1,
   number: String(i + 1).padStart(2, '0'),

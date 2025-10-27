@@ -1,4 +1,3 @@
-// src/components/StatsOverview/StatsOverview.jsx
 import React from 'react';
 import './StatsOverview.css';
 

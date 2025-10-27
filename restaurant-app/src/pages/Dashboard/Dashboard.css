@@ -1,4 +1,3 @@
-/* src/pages/Dashboard/Dashboard.css */
 .dashboard-container {
   width: 100%;
 }
@@ -45,7 +44,7 @@
 }
 
 .stats-and-chart-column {
-  flex: 2; /* Approx 65% width */
+  flex: 2; 
   display: flex;
   flex-direction: column;
   gap: 20px; 
