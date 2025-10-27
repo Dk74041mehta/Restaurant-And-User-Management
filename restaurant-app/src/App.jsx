@@ -1,4 +1,4 @@
-vimport React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { LayoutDashboard, Users, Utensils, Table, ChefHat, Search, DollarSign, BarChart3, Clock, TrendingUp, Plus, Trash2, X, AlertTriangle, Check, ListChecks, ChevronDown, Edit3, Save, Package } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
