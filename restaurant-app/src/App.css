@@ -1,392 +1,374 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* src/index.css */
+
+/* Global Reset and Styles */
+:root {
+    --sidebar-width: 250px;
+    --primary-color: #007bff;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --background-color: #f4f6f9;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f5f5f5;
-  color: #333;
+    margin: 0;
+    font-family: sans-serif;
+    background-color: var(--background-color);
+    color: #333;
+    line-height: 1.6;
 }
+
+h1, h2, h3, h4 {
+    margin-top: 0;
+    font-weight: 600;
+}
+
+.page-padding {
+    padding: 0; /* Padding content-area से आ रहा है */
+}
+
+/* Reusable Card Style */
+.card-style {
+    background-color: var(--card-bg);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.search-input, .filter-dropdown {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* =======================================
+// 1. Sidebar and Layout CSS
+// ======================================= */
 
 .app-layout {
-  display: flex;
-  height: 100vh;
+    display: flex;
 }
 
-/* SIDEBAR */
 .sidebar {
-  width: 70px;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 20px 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
-.sidebar .logo {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 30px;
+.sidebar-logo {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--primary-color);
 }
 
-.sidebar button {
-  width: 50px;
-  height: 50px;
-  border: none;
-  background: none;
-  font-size: 24px;
-  cursor: pointer;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  transition: 0.2s;
+.sidebar-nav {
+    list-style: none;
+    padding: 0 15px;
+    margin: 0;
 }
 
-.sidebar button.active {
-  background: #6366f1;
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #555;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    transition: background-color 0.2s;
 }
 
-.sidebar button:hover {
-  background: #e0e7ff;
+.nav-link:hover {
+    background-color: #f0f4f7;
 }
 
-/* MAIN CONTENT */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
 }
 
-.app-header {
-  background: #fff;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e5e7eb;
+.content-area {
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 100vh;
 }
 
-.company-logo {
-  font-size: 20px;
-  font-weight: bold;
+
+/* =======================================
+// 2. Dashboard CSS
+// ======================================= */
+
+.dashboard-container {
+    width: 100%;
 }
 
-.app-header input {
-  padding: 8px 15px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  width: 300px;
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
 }
 
-.app-main {
-  flex: 1;
-  padding: 30px;
-  overflow-y: auto;
+.header-left h2 {
+    font-size: 24px;
 }
 
-/* ANALYTICS VIEW */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
+.summary-cards-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
-.stat-card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.summary-card {
+    flex: 1;
+    min-width: 150px;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 8px;
+.card-count {
+    font-size: 38px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #2c3e50;
 }
 
-.stat-value {
-  font-size: 32px;
-  font-weight: bold;
+.card-title {
+    font-size: 16px;
+    color: #95a5a6;
+    font-weight: 500;
 }
 
-.analytics-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
+.dashboard-main-content {
+    display: flex;
+    gap: 20px; 
+    align-items: stretch;
 }
 
-.chart-section, .order-summary, .tables-preview, .chef-table {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.stats-and-chart-column {
+    flex: 2; /* Approx 65% width */
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
 }
 
-.chart-placeholder {
-  height: 200px;
-  background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  margin-top: 15px;
+.table-overview-column {
+    flex: 1; /* Approx 35% width */
 }
 
-.tables-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 8px;
-  margin-top: 15px;
+/* --- Stats Overview (Progress Bars) --- */
+.stats-card h3 { margin-bottom: 20px; font-size: 20px; }
+.stat-item { margin-bottom: 15px; }
+.stat-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.progress-bar-fill { height: 100%; transition: width 0.5s ease; }
+
+/* --- Revenue Chart (Placeholder) --- */
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.chart-header h3 { font-size: 20px; }
+.chart-placeholder { height: 200px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
+.dummy-chart-line {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 180px; 
+    /* DUMMY VISUAL */
+    background: repeating-linear-gradient(to top, transparent, transparent 39px, #eee 40px, #eee 40px);
+    border-bottom: 1px solid #ccc;
+    opacity: 0.7;
+}
+.chart-labels { display: flex; justify-content: space-between; padding-top: 10px; font-size: 12px; color: #777; text-align: center; }
+
+/* --- Table Overview (Dashboard) --- */
+.table-overview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.table-overview-header h3 { font-size: 20px; }
+.available-count { font-size: 14px; color: #999; }
+.available-count span { font-weight: bold; color: var(--success-color); }
+.tables-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.table-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 5px; border-radius: 8px; cursor: pointer; height: 60px;
+}
+.table-title { font-size: 10px; text-transform: uppercase; font-weight: 600; }
+.table-number { font-size: 18px; font-weight: 700; }
+.table-item.reserved { background-color: var(--success-color); color: white; }
+.table-item.available { background-color: var(--card-bg); color: #333; border: 1px solid #ddd; }
+
+
+/* =======================================
+// 3. Tables Management CSS (Desktop - 2.pdf)
+// ======================================= */
+
+.tables-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.tables-header h1 { font-size: 28px; }
+
+.add-table-btn {
+    background-color: var(--primary-color);
+    color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    font-weight: 600; transition: background-color 0.3s;
+}
+.add-table-btn:hover { background-color: #0056b3; }
+
+.add-table-form-container {
+    padding: 20px; margin-bottom: 25px;
+}
+.add-table-form-container h3 { margin-bottom: 15px; font-size: 20px; }
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+.form-group input { width: 100%; box-sizing: border-box; }
+
+.chair-selector { display: flex; gap: 10px; }
+.chair-option {
+    padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 6px;
+    background-color: #f9f9f9; cursor: pointer; font-weight: 500;
+}
+.chair-option.active {
+    background-color: var(--primary-color);
+    color: white; border-color: var(--primary-color);
 }
 
-.mini-table {
-  background: #fff;
-  border: 2px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: bold;
+.create-btn {
+    background-color: var(--success-color);
+    color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    font-weight: 600; transition: background-color 0.3s; margin-top: 10px;
+}
+.create-btn:hover { background-color: #1e7e34; }
+
+
+.tables-grid-full {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
 }
 
-.mini-table.reserved {
-  background: #10b981;
-  color: #fff;
-  border-color: #059669;
+.table-item-full {
+    position: relative;
+    background-color: var(--card-bg);
+    padding: 20px;
+    text-align: center;
+    font-weight: 500;
 }
+.table-item-full .table-number { font-size: 24px; font-weight: 700; display: block; margin-bottom: 5px; }
+.table-item-full .table-status { font-size: 12px; font-weight: 700; color: var(--success-color); }
 
-.legend {
-  display: flex;
-  gap: 20px;
-  margin-top: 10px;
-  font-size: 14px;
+.delete-btn {
+    position: absolute; top: 5px; right: 5px;
+    background: none; border: none; color: var(--danger-color);
+    font-size: 18px; cursor: pointer; opacity: 0.7;
 }
+.delete-btn:hover { opacity: 1; }
+.delete-btn:disabled { color: #ccc; cursor: not-allowed; }
 
-.reserved-legend { color: #10b981; }
-.available-legend { color: #6b7280; }
 
-.chef-table table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+/* =======================================
+// 4. Order Line CSS (Desktop - 6.png)
+// ======================================= */
+
+.order-line-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
 }
+.order-line-header h1 { font-size: 28px; }
+.filter-options { display: flex; gap: 15px; }
 
-.chef-table th, .chef-table td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-/* TABLES VIEW */
-.tables-view h2 {
-  margin-bottom: 20px;
-}
-
-.tables-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.table-card {
-  background: #fff;
-  border: 2px solid #d1d5db;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  position: relative;
-  transition: 0.2s;
-}
-
-.table-card:hover {
-  border-color: #6366f1;
-}
-
-.table-card.reserved {
-  background: #10b981;
-  color: #fff;
-  border-color: #059669;
-}
-
-.delete-icon {
-  position: absolute;
-  top: 5px;
-  right: 8px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #ef4444;
-}
-
-.table-number {
-  font-size: 32px;
-  font-weight: bold;
-}
-
-.table-name {
-  font-size: 14px;
-  margin: 5px 0;
-}
-
-.table-size {
-  font-size: 16px;
-}
-
-.add-table-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.add-table-form input {
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  flex: 1;
-}
-
-.add-table-form button {
-  padding: 10px 20px;
-  background: #6366f1;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* ORDER LINE VIEW */
 .orders-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
 }
 
 .order-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid; /* Status color */
 }
 
-.order-card.ongoing {
-  background: #fef3c7;
-  border: 2px solid #f59e0b;
+.order-card.processing { border-left-color: var(--warning-color); }
+.order-card.done { border-left-color: var(--success-color); }
+.order-card.new { border-left-color: var(--primary-color); }
+
+.order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.order-status { font-weight: 700; font-size: 14px; }
+.order-id { font-size: 12px; color: #999; }
+.order-details { margin-bottom: 10px; }
+.order-type, .order-chef { font-size: 14px; margin: 5px 0; }
+
+.order-items-list { list-style: disc; padding-left: 20px; margin: 0 0 15px 0; font-size: 14px; }
+.order-items-list li { margin-bottom: 3px; }
+
+.order-footer { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #555; border-top: 1px solid #eee; padding-top: 10px; }
+
+
+/* =======================================
+// 5. Menu Management CSS (Desktop - 3.png)
+// ======================================= */
+
+.menu-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+}
+.menu-header h1 { font-size: 28px; }
+.menu-actions { display: flex; gap: 15px; }
+
+.add-menu-btn {
+    background-color: var(--success-color);
+    color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    font-weight: 600; transition: background-color 0.3s;
 }
 
-.order-card.served {
-  background: #d1fae5;
-  border: 2px solid #10b981;
+.menu-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
 }
 
-.order-card.done {
-  background: #e5e7eb;
-  border: 2px solid #6b7280;
+.menu-item-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
 }
 
-.order-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  font-weight: bold;
+.item-image-placeholder {
+    width: 60px; height: 60px; background-color: #f0f4f7; border-radius: 8px;
+    margin-right: 15px; display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: bold; color: #aaa;
 }
 
-.status-badge {
-  background: #6366f1;
-  color: #fff;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-}
+.item-details { flex-grow: 1; }
+.item-name { margin-bottom: 3px; font-size: 18px; }
+.item-category { font-size: 12px; color: #999; margin-bottom: 8px; }
+.item-footer { display: flex; justify-content: space-between; }
 
-.order-info {
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.order-items {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.order-status-btn {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  background: #f59e0b;
-  color: #fff;
-}
-
-/* MENU VIEW */
-.category-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.category-tabs button {
-  padding: 10px 20px;
-  border: 1px solid #d1d5db;
-  border-radius: 20px;
-  background: #fff;
-  cursor: pointer;
-}
-
-.category-tabs button.active {
-  background: #6366f1;
-  color: #fff;
-  border-color: #6366f1;
-}
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.menu-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.menu-image {
-  background: #e5e7eb;
-  height: 150px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.menu-details {
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  font-size: 20px;
-  color: #6366f1;
-}
+.item-price { font-size: 16px; font-weight: 700; color: var(--primary-color); }
+.item-stock { font-size: 12px; font-weight: 600; }
+.item-stock.in-stock { color: var(--success-color); }
+.item-stock.low-stock { color: var(--danger-color); }
