@@ -1,7 +1,7 @@
+// src/components/SummaryCard/SummaryCard.jsx
 import React from 'react';
 import './SummaryCard.css';
 
-// हम 'count' और 'title' को props के तौर पर ले रहे हैं
 const SummaryCard = ({ count, title }) => {
   return (
     <div className="summary-card">

@@ -39,4 +39,34 @@
   margin-bottom: 30px;
 }
 
-/* हम बाद में इन्हें responsive बनाएँगे */
+/* src/pages/Dashboard/Dashboard.css */
+
+/* ... (Existing CSS for dashboard-container, header, summary-cards-container) ... */
+
+.dashboard-main-content {
+  display: flex;
+  gap: 20px; /* दो कॉलम के बीच की दूरी */
+}
+
+.stats-and-chart-column {
+  /* इसे 65-70% जगह दें */
+  flex: 2; 
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Stats और Chart कार्ड के बीच की दूरी */
+}
+
+.table-overview-column {
+  /* इसे 30-35% जगह दें */
+  flex: 1;
+}
+
+/* Table Placeholder को स्टाइल करें */
+.table-overview-placeholder {
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  height: 100%; /* कॉलम की पूरी ऊँचाई लेने के लिए */
+}
