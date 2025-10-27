@@ -1,11 +1,7 @@
-// src/App.jsx
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, NavLink } from 'react-router-dom';
 
-// =======================================================
-// 1. Local Storage Utilities (Tables Management के लिए)
-// =======================================================
+// Local Storage Utilities 
 
 const STORAGE_KEY = 'RESTAURANT_TABLES';
 const MAX_TABLES = 30; // Maximum tables limit
@@ -15,13 +11,12 @@ const getTables = () => {
   return data ? JSON.parse(data) : [];
 };
 
-// टेबल को सेव करते समय Sequential Numbering सुनिश्चित करें
 const saveTables = (tables) => {
   const reindexedTables = tables
     .filter(t => t && t.chairs && t.chairs > 0) 
     .map((table, index) => ({
       ...table,
-      id: index + 1, // नया sequential ID
+      id: index + 1, 
       number: String(index + 1).padStart(2, '0'), // 01, 02, 03...
     }));
   
@@ -30,9 +25,7 @@ const saveTables = (tables) => {
 };
 
 
-// =======================================================
-// 2. Layout Components (Sidebar & AppLayout)
-// =======================================================
+// Layout Components (Sidebar & AppLayout)
 
 const Sidebar = () => (
     <nav className="sidebar">
@@ -56,11 +49,8 @@ const AppLayout = () => (
 );
 
 
-// =======================================================
-// 3. Dashboard Components (Desktop - 1: Analytics)
-// =======================================================
+// 3. Dashboard Components 
 
-// A. Top 4 Summary Cards (Horizontal)
 const TopStatsCard = ({ title, count, icon }) => (
     <div className="top-stats-card card-style">
         <span className="card-icon">{icon}</span>
@@ -87,7 +77,7 @@ const TopSummaryRow = () => {
     );
 };
 
-// B. Order Summary 3 Cards
+// Order Summary 3 Cards
 const SummaryCard = ({ count, title }) => (
     <div className="summary-card card-style">
         <div className="card-count">{count}</div>
@@ -95,7 +85,7 @@ const SummaryCard = ({ count, title }) => (
     </div>
 );
 
-// C. Revenue Stats Overview (Progress Bars)
+// Revenue Stats Overview 
 const StatsOverview = () => {
     const statsData = [
         { name: 'Take Away', percentage: 75, color: '#007bff' },
@@ -124,7 +114,6 @@ const StatsOverview = () => {
     );
 };
 
-// D. RevenueChart Component (Placeholder Graph)
 const RevenueChart = () => (
     <div className="chart-card card-style">
         <div className="chart-header">
@@ -141,11 +130,9 @@ const RevenueChart = () => (
     </div>
 );
 
-// E. TableOverview Component (Dashboard Grid - Small)
+//TableOverview Component 
 const TableOverview = () => {
-    // Note: This is the small view for Dashboard, not the main Tables page
     const tables = getTables();
-    // Default 30 dummy tables or real tables (Dashboard view)
     const displayTables = tables.length > 0 ? tables : Array.from({ length: 30 }, (_, i) => ({ id: i + 1, number: String(i + 1).padStart(2, '0'), isReserved: i % 5 === 0, seats: 4 }));
 
     return (
@@ -170,9 +157,8 @@ const TableOverview = () => {
     );
 };
 
-// F. Chef Order List
+// Chef Order List
 const ChefOrderList = () => {
-    // Dummy Data based on Figma/PDF
     const chefData = [
         { name: 'Manesh', orders: 3 },
         { name: 'Pritam', orders: 7 },
@@ -199,7 +185,7 @@ const ChefOrderList = () => {
 };
 
 
-// G. Main Dashboard Page (Analytics)
+// Main Dashboard Page
 const Dashboard = () => {
     const summaryData = [
         { title: 'Served', count: '09' },
@@ -210,25 +196,19 @@ const Dashboard = () => {
     return (
         <div className="dashboard-container">
             
-            {/* === 1. TOP HEADER + SEARCH BAR === */}
             <div className="dashboard-top-header">
                 <input type="text" placeholder="Filter..." className="search-filter-input" />
             </div>
 
-            {/* === 2. ROW 1: 4 TOP SUMMARY CARDS (Horizontal) === */}
             <TopSummaryRow />
 
-            {/* === 3. ROW 2: MAIN CONTENT (2 Columns) === */}
             <div className="dashboard-main-content">
                 
-                {/* LEFT COLUMN */}
                 <div className="stats-and-chart-column">
                     
-                    {/* Order Summary (3 Cards) */}
                     <div className="order-summary-section">
                         <div className="section-header">
                             <h2>Order Summary</h2>
-                            {/* Dummy text from PDF */}
                             <p>hijokpirngntop[gtgkoikokyhikoy[phokphnoy</p> 
                         </div>
                         <div className="summary-cards-container">
@@ -238,15 +218,12 @@ const Dashboard = () => {
                         </div>
                     </div>
                     
-                    {/* Revenue Section */}
                     <RevenueChart />
                     <StatsOverview />
                     
-                    {/* Chef Name and Order Taken Card */}
                     <ChefOrderList />
                 </div>
                 
-                {/* RIGHT COLUMN */}
                 <div className="table-overview-column">
                     <TableOverview />
                 </div>
@@ -256,9 +233,7 @@ const Dashboard = () => {
 };
 
 
-// =======================================================
-// 4. Tables Management Page (Chairs - Desktop - 2)
-// =======================================================
+// Tables Management Page 
 
 const Tables = () => {
     const [tables, setTables] = useState(getTables());
@@ -275,7 +250,6 @@ const Tables = () => {
             alert(`Maximum ${MAX_TABLES} tables allowed. Please delete a table to add a new one.`);
             return;
         }
-        // Toggle the form visibility
         setShowAddForm(prev => !prev);
     };
 
@@ -288,7 +262,7 @@ const Tables = () => {
         }
 
         const newTable = {
-            name: tableName || null, // Table name is optional
+            name: tableName || null, 
             chairs: chairCount,
             isReserved: false,
         };
@@ -302,7 +276,6 @@ const Tables = () => {
     };
 
     const handleDeleteTable = (id) => {
-        // Reserved tables cannot be deleted
         const tableToDelete = tables.find(table => table.id === id);
         if (tableToDelete?.isReserved) {
             alert("Reserved tables cannot be deleted.");
@@ -318,16 +291,14 @@ const Tables = () => {
     
     const availableSizes = [2, 4, 6, 8];
     
-    // Default 30 dummy tables if local storage is empty
     const displayTables = tables.length > 0 ? tables : Array.from({ length: MAX_TABLES }, (_, i) => ({
         id: i + 1,
         number: String(i + 1).padStart(2, '0'),
         chairs: 4,
         isReserved: false, 
-        isDummy: true // Added flag for dummy tables
+        isDummy: true 
     }));
 
-    // If using dummy tables, only show the add card if storage is empty
     const showAddCard = tables.length < MAX_TABLES && !showAddForm;
 
 
@@ -338,10 +309,8 @@ const Tables = () => {
             </header>
 
             
-            {/* Tables Grid */}
             <div className="tables-grid-full">
                 
-                {/* 1. Add Table Card (+) - Only if max limit not reached and form is closed */}
                 {showAddCard && (
                     <div 
                         className="add-table-placeholder card-style"
@@ -352,11 +321,9 @@ const Tables = () => {
                     </div>
                 )}
 
-                {/* 2. Form (Optional/Floating) - Appears when triggered */}
                 {showAddForm && tables.length < MAX_TABLES && (
                     <form onSubmit={handleCreateTable} className="add-table-form-floating card-style">
                         
-                        {/* Title (hidden, but for semantics) */}
                         <div className="form-group">
                             <label htmlFor="tableName">Table name (optional)</label>
                             <input
@@ -368,7 +335,6 @@ const Tables = () => {
                             />
                         </div>
 
-                        {/* Chair Selector */}
                         <div className="form-group">
                             <label>Chair</label>
                             <div className="chair-selector">
@@ -391,14 +357,12 @@ const Tables = () => {
                     </form>
                 )}
                 
-                {/* 3. Dynamic Table Cards (Real or Dummy) */}
                 {displayTables.map(table => (
                     <div 
                         key={table.id} 
                         className={`table-item-full card-style ${table.isDummy ? 'dummy' : ''}`}
                     >
                         
-                        {/* Top Right: Delete Button (Only for non-dummy, non-reserved tables) */}
                         {!table.isDummy && (
                             <button 
                                 className="delete-btn" 
@@ -410,13 +374,11 @@ const Tables = () => {
                             </button>
                         )}
                         
-                        {/* Center: Table Number and Label */}
                         <div className="table-content-pdf">
                             <span className="table-label-pdf">Table</span>
                             <span className="table-number-pdf">{table.number}</span>
                         </div>
                         
-                        {/* Bottom Right: Chair Count (e.g., A 04) */}
                         <span className="table-chairs-pdf">
                            A {String(table.chairs || 4).padStart(2, '0')}
                         </span>
@@ -428,9 +390,7 @@ const Tables = () => {
 };
 
 
-// =======================================================
-// 5. Order Line Page (Desktop - 6)
-// =======================================================
+// Order Line Page 
 
 const OrderCard = ({ order }) => (
     <div className={`order-card card-style ${order.status.toLowerCase().replace(' ', '-')}`}>
@@ -457,7 +417,6 @@ const OrderCard = ({ order }) => (
 );
 
 const OrderLine = () => {
-    // Dummy Order Data
     const orders = [
         { id: 101, status: 'Processing', type: 'Dine In', table: '05', chef: 'Manesh', time: '10m', totalItems: 3, items: [{name: 'Biryani', qty: 1}, {name: 'Naan', qty: 2}] },
         { id: 102, status: 'Done', type: 'Take Away', chef: 'Pritam', time: '0m', totalItems: 5, items: [{name: 'Pizza', qty: 1}, {name: 'Coke', qty: 4}] },
@@ -490,9 +449,7 @@ const OrderLine = () => {
 };
 
 
-// =======================================================
-// 6. Menu Management Page (Desktop - 3)
-// =======================================================
+// 6. Menu Management Page 
 
 const MenuItemCard = ({ item }) => (
     <div className="menu-item-card-full card-style">
@@ -514,7 +471,6 @@ const MenuItemCard = ({ item }) => (
 );
 
 const Menu = () => {
-    // Dummy Menu Data with all fields as per SRD
     const menuItems = [
         { id: 1, name: 'Tandoori Roti', description: 'Classic Indian bread', price: 50, averagePreparationTime: '10 Mins', category: 'Bread', stock: 50, rating: 4.5 },
         { id: 2, name: 'Chicken Biryani', description: 'Spicy chicken rice dish', price: 250, averagePreparationTime: '20 Mins', category: 'Rice', stock: 15, rating: 4.8 },
@@ -550,9 +506,7 @@ const Menu = () => {
 };
 
 
-// =======================================================
-// 7. Main App Router
-// =======================================================
+//Main App Router
 
 function App() {
   return (
