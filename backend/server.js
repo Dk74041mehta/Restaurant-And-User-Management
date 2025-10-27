@@ -7,8 +7,14 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'], // User App & Dashboard
+  origin: [
+    process.env.FRONTEND_URL1,
+    process.env.FRONTEND_URL2,
+    process.env.FRONTEND_URL3,
+    process.env.FRONTEND_URL4,
+  ].filter(Boolean), // removes any undefined values
   credentials: true,
 }));
 
@@ -45,9 +51,12 @@ app.get('/', (req, res) => {
 app.use(require('./middleware/errorHandler'));
 
 // Server Start
+
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(` Server running on http://localhost:${PORT}`);
-  console.log(`Dashboard: http://localhost:5174`);
-  console.log(`User App: http://localhost:5173`);
+  console.log(` Server running on port ${PORT}`);
+  console.log(` Dashboard: ${process.env.DASHBOARD_URL || 'http://localhost:5174'}`);
+  console.log(` User App: ${process.env.USERAPP_URL || 'http://localhost:5173'}`);
 });
+
