@@ -3,21 +3,15 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-// आप यहाँ अपने icons import कर सकते हैं
-// import DashboardIcon from '../../assets/dashboard-icon.svg';
-
 const Sidebar = () => {
   return (
     <nav className="sidebar">
       <div className="sidebar-logo">
-        {/* आपका लोगो यहाँ */}
-        Logo
+        <span role="img" aria-label="Restaurant Icon">🍽️</span> Logo
       </div>
       <ul className="sidebar-nav">
         <li>
-          {/* NavLink 'active' class को खुद हैंडल करता है */}
           <NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            {/* <img src={DashboardIcon} alt="Dashboard" /> */}
             <span>Dashboard</span>
           </NavLink>
         </li>

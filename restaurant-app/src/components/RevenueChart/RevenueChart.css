@@ -31,10 +31,10 @@
 
 /* --- प्लेसहोल्डर CSS --- */
 .chart-placeholder {
-  height: 200px; /* ग्राफ की ऊँचाई */
+  height: 200px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* लेबल नीचे रहें */
+  justify-content: flex-end;
   position: relative;
 }
 
@@ -43,11 +43,11 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 180px; /* लेबल के ऊपर की जगह */
+  height: 180px; 
   background: 
     repeating-linear-gradient(to top, transparent, transparent 39px, #eee 40px, #eee 40px),
     linear-gradient(to right, #007bff 0%, #007bff 20%, #ffc107 40%, #28a745 60%, #dc3545 80%, #007bff 100%);
-  background-blend-mode: multiply; /* लाइन ग्राफ जैसा दिखने के लिए */
+  background-blend-mode: multiply;
   border-bottom: 1px solid #ccc;
   opacity: 0.7;
 }

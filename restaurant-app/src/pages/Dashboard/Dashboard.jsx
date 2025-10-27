@@ -3,11 +3,10 @@ import React from 'react';
 import SummaryCard from '../../components/SummaryCard/SummaryCard';
 import StatsOverview from '../../components/StatsOverview/StatsOverview';
 import RevenueChart from '../../components/RevenueChart/RevenueChart';
-import TableOverview from '../../components/TableOverview/TableOverview'; // NEW
+import TableOverview from '../../components/TableOverview/TableOverview';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  // अभी के लिए डमी डेटा। Local Storage का काम हम बाद में करेंगे।
   const summaryData = [
     { title: 'Served', count: '09' },
     { title: 'Dine In', count: '05' },

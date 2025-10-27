@@ -2,7 +2,6 @@
 import React from 'react';
 import './StatsOverview.css';
 
-// हम डेटा को props के तौर पर ले सकते हैं, लेकिन अभी के लिए यहीं डिफाइन करते हैं
 const statsData = [
   { name: 'Take Away', percentage: 75, color: '#007bff' },
   { name: 'Served', percentage: 47, color: '#28a745' },
@@ -12,7 +11,7 @@ const statsData = [
 const StatsOverview = () => {
   return (
     <div className="stats-card">
-      <h3>Revenue</h3> {/* Figma design में इस सेक्शन का टाइटल 'Revenue' है */}
+      <h3>Revenue</h3>
       <div className="stats-list">
         {statsData.map((stat) => (
           <div key={stat.name} className="stat-item">
@@ -20,7 +19,6 @@ const StatsOverview = () => {
               <span>{stat.name}</span>
               <span>{stat.percentage}%</span>
             </div>
-            {/* यह हमारा Custom Progress Bar है */}
             <div className="progress-bar-container">
               <div 
                 className="progress-bar-fill" 

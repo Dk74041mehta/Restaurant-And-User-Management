@@ -6,13 +6,12 @@ const RevenueChart = () => {
   return (
     <div className="chart-card">
       <div className="chart-header">
-        <h3>Tables</h3> {/* Figma design में इस सेक्शन का टाइटल 'Tables' है */}
+        <h3>Revenue</h3>
         <div className="chart-filter">Daily</div>
       </div>
       
       {/* ग्राफ का विज़ुअल प्लेसहोल्डर */}
       <div className="chart-placeholder">
-        {/* यह एक डमी लाइन ग्राफ दिखाने के लिए है */}
         <div className="dummy-chart-line"></div>
         
         <div className="chart-labels">
