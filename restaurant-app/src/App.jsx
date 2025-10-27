@@ -8,13 +8,14 @@ import { BrowserRouter, Routes, Route, Outlet, NavLink } from 'react-router-dom'
 // =======================================================
 
 const STORAGE_KEY = 'RESTAURANT_TABLES';
+const MAX_TABLES = 30; // Maximum tables limit 
 
 const getTables = () => {
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 };
 
-// टेबल को सेव करते समय Sequential Numbering सुनिश्चित करें
+// टेबल को सेव करते समय Sequential Numbering सुनिश्चित करें 
 const saveTables = (tables) => {
   const reindexedTables = tables
     .filter(t => t && t.chairs && t.chairs > 0) 
@@ -37,7 +38,6 @@ const Sidebar = () => (
     <nav className="sidebar">
         <div className="sidebar-logo">🍽️ Company Logo</div> 
         <ul className="sidebar-nav">
-            {/* Nav Links as per user request */}
             <li><NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Analytics</span></NavLink></li>
             <li><NavLink to="/tables" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Chairs</span></NavLink></li>
             <li><NavLink to="/order-line" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}><span>Order Line</span></NavLink></li>
@@ -73,10 +73,10 @@ const TopStatsCard = ({ title, count, icon }) => (
 
 const TopSummaryRow = () => {
     const data = [
-        { title: 'TOTAL CHEF', count: '04', icon: '👨‍🍳' },
-        { title: 'TOTAL REVENUE', count: '₹ 12K', icon: '💰' },
-        { title: 'TOTAL ORDERS', count: '20', icon: '📝' },
-        { title: 'TOTAL CLIENTS', count: '65', icon: '👥' },
+        { title: 'TOTAL CHEF', count: '04', icon: '👨‍🍳' }, // [cite: 11]
+        { title: 'TOTAL REVENUE', count: '₹ 12K', icon: '💰' }, // [cite: 12]
+        { title: 'TOTAL ORDERS', count: '20', icon: '📝' }, // [cite: 13]
+        { title: 'TOTAL CLIENTS', count: '65', icon: '👥' }, // [cite: 14]
     ];
     return (
         <div className="top-summary-row">
@@ -141,9 +141,11 @@ const RevenueChart = () => (
     </div>
 );
 
-// E. TableOverview Component (Dashboard Grid)
+// E. TableOverview Component (Dashboard Grid - Small)
 const TableOverview = () => {
+    // Note: This is the small view for Dashboard, not the main Tables page
     const tables = getTables();
+    // Default 30 dummy tables or real tables (Dashboard view)
     const displayTables = tables.length > 0 ? tables : Array.from({ length: 30 }, (_, i) => ({ id: i + 1, number: String(i + 1).padStart(2, '0'), isReserved: i % 5 === 0, seats: 4 }));
 
     return (
@@ -156,7 +158,7 @@ const TableOverview = () => {
                 {displayTables.slice(0, 30).map((table) => (
                     <div 
                         key={table.id} 
-                        className={`table-item ${table.isReserved ? 'reserved' : 'available'}`}
+                        [cite_start]className={`table-item ${table.isReserved ? 'reserved' : 'available'}`} // [cite: 24, 25]
                         title={`Table ${table.number} (${table.seats} Chairs)`}
                     >
                         <span className="table-title">Table</span>
@@ -170,6 +172,7 @@ const TableOverview = () => {
 
 // F. Chef Order List
 const ChefOrderList = () => {
+    // Dummy Data based on Figma/PDF [cite: 165, 166, 167, 168, 169, 170, 171, 172]
     const chefData = [
         { name: 'Manesh', orders: 3 },
         { name: 'Pritam', orders: 7 },
@@ -199,9 +202,9 @@ const ChefOrderList = () => {
 // G. Main Dashboard Page (Analytics)
 const Dashboard = () => {
     const summaryData = [
-        { title: 'Served', count: '09' },
-        { title: 'Dine In', count: '05' },
-        { title: 'Take Away', count: '06' },
+        { title: 'Served', count: '09' }, // [cite: 96]
+        { title: 'Dine In', count: '05' }, // [cite: 97]
+        { title: 'Take Away', count: '06' }, // [cite: 99]
     ];
     
     return (
@@ -209,7 +212,7 @@ const Dashboard = () => {
             
             {/* === 1. TOP HEADER + SEARCH BAR === */}
             <div className="dashboard-top-header">
-                <input type="text" placeholder="Filter..." className="search-filter-input" />
+                <input type="text" placeholder="Filter..." className="search-filter-input" /> {/* [cite: 7, 77] */}
             </div>
 
             {/* === 2. ROW 1: 4 TOP SUMMARY CARDS (Horizontal) === */}
@@ -225,7 +228,8 @@ const Dashboard = () => {
                     <div className="order-summary-section">
                         <div className="section-header">
                             <h2>Order Summary</h2>
-                            <p>hijokpirngntop[gtgkoikokyhikoy[phokphnoy</p>
+                            {/* Dummy text from PDF [cite: 88] */}
+                            <p>hijokpirngntop[gtgkoikokyhikoy[phokphnoy</p> 
                         </div>
                         <div className="summary-cards-container">
                             {summaryData.map((item, index) => (
@@ -267,8 +271,8 @@ const Tables = () => {
     }, []);
 
     const handleToggleForm = () => {
-        if (tables.length >= 30) {
-            alert("Maximum 30 tables allowed. Please delete a table to add a new one.");
+        if (tables.length >= MAX_TABLES) {
+            alert(`Maximum ${MAX_TABLES} tables allowed. Please delete a table to add a new one.`);
             return;
         }
         setShowAddForm(prev => !prev);
@@ -277,9 +281,14 @@ const Tables = () => {
     const handleCreateTable = (e) => {
         e.preventDefault();
         
+        if (tables.length >= MAX_TABLES) {
+             alert(`Maximum ${MAX_TABLES} tables allowed. You cannot create more.`);
+             return;
+        }
+
         const newTable = {
-            name: tableName || null,
-            chairs: chairCount,
+            name: tableName || null, // Table name is optional [cite: 35]
+            chairs: chairCount, // [cite: 34]
             isReserved: false,
         };
 
@@ -292,90 +301,103 @@ const Tables = () => {
     };
 
     const handleDeleteTable = (id) => {
+        // [cite: 31] Reserved tables cannot be deleted
+        const tableToDelete = tables.find(table => table.id === id);
+        if (tableToDelete.isReserved) {
+            alert("Reserved tables cannot be deleted.");
+            return;
+        }
+        
         if (window.confirm("Are you sure you want to delete this table?")) {
             const updatedTables = tables.filter(table => table.id !== id);
-            const newTables = saveTables(updatedTables); // This re-indexes
+            const newTables = saveTables(updatedTables); // This re-indexes 
             setTables(newTables);
         }
     };
     
-    const availableSizes = [2, 4, 6, 8];
+    const availableSizes = [2, 4, 6, 8]; // [cite: 34]
     
     // Default 30 dummy tables if local storage is empty
-    const displayTables = tables.length > 0 ? tables : Array.from({ length: 30 }, (_, i) => ({
+    const displayTables = tables.length > 0 ? tables : Array.from({ length: MAX_TABLES }, (_, i) => ({
         id: i + 1,
         number: String(i + 1).padStart(2, '0'),
         chairs: 4,
         isReserved: false, 
-        isDummy: true
+        isDummy: true // Added flag for dummy tables
     }));
+
+    // If using dummy tables, only show the add card if storage is empty
+    const showAddCard = tables.length < MAX_TABLES && !showAddForm;
+
 
     return (
         <div className="tables-container page-padding">
             <header className="tables-header">
-                <h1>Tables Management</h1>
+                <h1>Tables</h1> {/* [cite: 174] */}
             </header>
 
-            {/* Add New Table Form (Inline) */}
-            {showAddForm && tables.length < 30 && (
-                <form onSubmit={handleCreateTable} className="add-table-form-container card-style">
-                    <h3>Create New Table</h3>
-                    <div className="form-group">
-                        <label htmlFor="tableName">Table Name (optional)</label>
-                        <input
-                            id="tableName"
-                            type="text"
-                            placeholder="Enter table name (e.g., Corner Table)"
-                            value={tableName}
-                            onChange={(e) => setTableName(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Chairs (Size)</label>
-                        <div className="chair-selector">
-                            {availableSizes.map(size => (
-                                <button
-                                    key={size}
-                                    type="button"
-                                    className={`chair-option ${chairCount === size ? 'active' : ''}`}
-                                    onClick={() => setChairCount(size)}
-                                >
-                                    {size}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="form-actions">
-                         <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>Cancel</button>
-                         <button type="submit" className="create-btn">Create Table</button>
-                    </div>
-                </form>
-            )}
-
+            
             {/* Tables Grid */}
             <div className="tables-grid-full">
                 
-                {/* 1. Add Table Card (if less than 30 and form not open) */}
-                {tables.length < 30 && !showAddForm && (
+                {/* 1. Add Table Card (+) - Only if max limit not reached and form is closed */}
+                {showAddCard && (
                     <div 
                         className="add-table-placeholder card-style"
                         onClick={handleToggleForm}
+                        title="Add New Table"
                     >
                         <span className="plus-icon">+</span>
-                        <span>Add New Table</span>
                     </div>
                 )}
+
+                {/* 2. Form (Optional/Floating) - Appears when triggered */}
+                {showAddForm && tables.length < MAX_TABLES && (
+                    <form onSubmit={handleCreateTable} className="add-table-form-floating card-style">
+                        
+                        {/* Title (hidden, but for semantics) */}
+                        <div className="form-group">
+                            <label htmlFor="tableName">Table name (optional)</label>
+                            <input
+                                id="tableName"
+                                type="text"
+                                placeholder="31"
+                                value={tableName}
+                                onChange={(e) => setTableName(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Chair Selector */}
+                        <div className="form-group">
+                            <label>Chair</label>
+                            <div className="chair-selector">
+                                {availableSizes.map(size => (
+                                    <button
+                                        key={size}
+                                        type="button"
+                                        className={`chair-option ${chairCount === size ? 'active' : ''}`}
+                                        onClick={() => setChairCount(size)}
+                                    >
+                                        {String(size).padStart(2, '0')} 
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="form-actions-full">
+                             <button type="submit" className="create-btn">Create</button>
+                        </div>
+                    </form>
+                )}
                 
-                {/* 2. Dynamic Table Cards (Real or Dummy) */}
-                {(tables.length > 0 ? tables : displayTables).map(table => (
+                {/* 3. Dynamic Table Cards (Real or Dummy) */}
+                {displayTables.map(table => (
                     <div 
                         key={table.id} 
-                        className={`table-item-full card-style ${table.isReserved ? 'reserved' : 'available'} ${table.isDummy ? 'dummy' : ''}`}
+                        className={`table-item-full card-style ${table.isDummy ? 'dummy' : ''}`}
                     >
                         
-                        {/* Top Right: Delete Button (Only for real tables) */}
+                        {/* Top Right: Delete Button (Only for non-dummy, non-reserved tables) */}
                         {!table.isDummy && (
                             <button 
                                 className="delete-btn" 
@@ -383,21 +405,17 @@ const Tables = () => {
                                 disabled={table.isReserved} 
                                 title={table.isReserved ? 'Reserved tables cannot be deleted' : 'Delete Table'}
                             >
-                                <span className="delete-icon">✕</span>
+                                <span className="delete-icon">🗑️</span>
                             </button>
                         )}
                         
-                        {/* Center: Table Name and Number */}
-                        <div className="table-center-content">
-                            <span className="table-number-main">{table.number}</span>
-                            <span className="table-name-display">{table.name || 'Table'}</span>
-                        </div>
+                        {/* Center: Table Number */}
+                        <span className="table-number-pdf">{table.number}</span>
                         
-                        {/* Bottom Info: Status and Chairs */}
-                        <div className="table-bottom-info">
-                             <span className="table-status-label">{table.isReserved ? 'RESERVED' : 'AVAILABLE'}</span>
-                            <span className="table-chairs-full">{table.chairs || 4} Chairs</span>
-                        </div>
+                        {/* Bottom Right: Chair Count (e.g., A 04) */}
+                        <span className="table-chairs-pdf">
+                           A {String(table.chairs || 4).padStart(2, '0')}
+                        </span>
                     </div>
                 ))}
             </div>
@@ -435,6 +453,7 @@ const OrderCard = ({ order }) => (
 );
 
 const OrderLine = () => {
+    // Dummy Order Data [cite: 36, 38, 39, 40]
     const orders = [
         { id: 101, status: 'Processing', type: 'Dine In', table: '05', chef: 'Manesh', time: '10m', totalItems: 3, items: [{name: 'Biryani', qty: 1}, {name: 'Naan', qty: 2}] },
         { id: 102, status: 'Done', type: 'Take Away', chef: 'Pritam', time: '0m', totalItems: 5, items: [{name: 'Pizza', qty: 1}, {name: 'Coke', qty: 4}] },
@@ -472,28 +491,33 @@ const OrderLine = () => {
 // =======================================================
 
 const MenuItemCard = ({ item }) => (
-    <div className="menu-item-card card-style">
-        <div className="item-image-placeholder">{item.category[0]}</div>
+    <div className="menu-item-card-full card-style">
+        <div className="item-image-placeholder">{item.name[0]}</div>
         <div className="item-details">
             <h4 className="item-name">{item.name}</h4>
-            <p className="item-category">{item.category}</p>
-            <div className="item-footer">
-                <span className="item-price">₹{item.price}</span>
+            <p className="item-description">Description: {item.description}</p> {/* [cite: 47] */}
+            <p className="item-price">Price: ₹{item.price}</p> {/* [cite: 48] */}
+            <p className="item-prep-time">Average Prep Time: {item.averagePreparationTime}</p> {/* [cite: 49] */}
+            <p className="item-category">Category: {item.category}</p> {/* [cite: 50] */}
+            <div className="item-footer-full">
                 <span className={`item-stock ${item.stock > 10 ? 'in-stock' : 'low-stock'}`}>
-                    Stock: {item.stock}
-                </span>
+                    InStock: {item.stock > 0 ? 'Yes' : 'No'}
+                </span> {/* [cite: 51] */}
+                <span className="item-rating">Rating: {item.rating} ⭐</span>
             </div>
         </div>
     </div>
 );
 
 const Menu = () => {
+    // Dummy Menu Data with all fields as per SRD [cite: 45]
     const menuItems = [
-        { id: 1, name: 'Tandoori Roti', price: 50, category: 'Bread', stock: 50 },
-        { id: 2, name: 'Chicken Biryani', price: 250, category: 'Rice', stock: 15 },
-        { id: 3, name: 'Paneer Tikka', price: 180, category: 'Starter', stock: 5 },
-        { id: 4, name: 'Masala Dosa', price: 100, category: 'South Indian', stock: 30 },
-        { id: 5, name: 'Gulab Jamun', price: 80, category: 'Dessert', stock: 20 },
+        { id: 1, name: 'Tandoori Roti', description: 'Classic Indian bread', price: 50, averagePreparationTime: '10 Mins', category: 'Bread', stock: 50, rating: 4.5 },
+        { id: 2, name: 'Chicken Biryani', description: 'Spicy chicken rice dish', price: 250, averagePreparationTime: '20 Mins', category: 'Rice', stock: 15, rating: 4.8 },
+        { id: 3, name: 'Paneer Tikka', description: 'Grilled paneer cubes', price: 180, averagePreparationTime: '15 Mins', category: 'Starter', stock: 5, rating: 4.2 },
+        { id: 4, name: 'Masala Dosa', description: 'South Indian pancake', price: 100, averagePreparationTime: '10 Mins', category: 'South Indian', stock: 30, rating: 4.0 },
+        { id: 5, name: 'Gulab Jamun', description: 'Sweet milk solids balls', price: 80, averagePreparationTime: '5 Mins', category: 'Dessert', stock: 20, rating: 4.6 },
+        { id: 6, name: 'Burger', description: 'Description from Burger King', price: 199, averagePreparationTime: '20 Mins', category: 'Burgers', stock: 25, rating: 4.5 },
     ];
 
     return (
@@ -512,7 +536,7 @@ const Menu = () => {
                 </div>
             </div>
             
-            <div className="menu-items-grid">
+            <div className="menu-items-grid-full">
                 {menuItems.map(item => (
                     <MenuItemCard key={item.id} item={item} />
                 ))}
