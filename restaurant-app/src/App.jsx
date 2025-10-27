@@ -8,14 +8,14 @@ import { BrowserRouter, Routes, Route, Outlet, NavLink } from 'react-router-dom'
 // =======================================================
 
 const STORAGE_KEY = 'RESTAURANT_TABLES';
-const MAX_TABLES = 30; // Maximum tables limit 
+const MAX_TABLES = 30; // Maximum tables limit
 
 const getTables = () => {
   const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 };
 
-// टेबल को सेव करते समय Sequential Numbering सुनिश्चित करें 
+// टेबल को सेव करते समय Sequential Numbering सुनिश्चित करें
 const saveTables = (tables) => {
   const reindexedTables = tables
     .filter(t => t && t.chairs && t.chairs > 0) 
@@ -73,10 +73,10 @@ const TopStatsCard = ({ title, count, icon }) => (
 
 const TopSummaryRow = () => {
     const data = [
-        { title: 'TOTAL CHEF', count: '04', icon: '👨‍🍳' }, // [cite: 11]
-        { title: 'TOTAL REVENUE', count: '₹ 12K', icon: '💰' }, // [cite: 12]
-        { title: 'TOTAL ORDERS', count: '20', icon: '📝' }, // [cite: 13]
-        { title: 'TOTAL CLIENTS', count: '65', icon: '👥' }, // [cite: 14]
+        { title: 'TOTAL CHEF', count: '04', icon: '👨‍🍳' },
+        { title: 'TOTAL REVENUE', count: '₹ 12K', icon: '💰' },
+        { title: 'TOTAL ORDERS', count: '20', icon: '📝' },
+        { title: 'TOTAL CLIENTS', count: '65', icon: '👥' },
     ];
     return (
         <div className="top-summary-row">
@@ -158,7 +158,7 @@ const TableOverview = () => {
                 {displayTables.slice(0, 30).map((table) => (
                     <div 
                         key={table.id} 
-                        [cite_start]className={`table-item ${table.isReserved ? 'reserved' : 'available'}`} // [cite: 24, 25]
+                        className={`table-item ${table.isReserved ? 'reserved' : 'available'}`}
                         title={`Table ${table.number} (${table.seats} Chairs)`}
                     >
                         <span className="table-title">Table</span>
@@ -172,7 +172,7 @@ const TableOverview = () => {
 
 // F. Chef Order List
 const ChefOrderList = () => {
-    // Dummy Data based on Figma/PDF [cite: 165, 166, 167, 168, 169, 170, 171, 172]
+    // Dummy Data based on Figma/PDF
     const chefData = [
         { name: 'Manesh', orders: 3 },
         { name: 'Pritam', orders: 7 },
@@ -202,9 +202,9 @@ const ChefOrderList = () => {
 // G. Main Dashboard Page (Analytics)
 const Dashboard = () => {
     const summaryData = [
-        { title: 'Served', count: '09' }, // [cite: 96]
-        { title: 'Dine In', count: '05' }, // [cite: 97]
-        { title: 'Take Away', count: '06' }, // [cite: 99]
+        { title: 'Served', count: '09' },
+        { title: 'Dine In', count: '05' },
+        { title: 'Take Away', count: '06' },
     ];
     
     return (
@@ -212,7 +212,7 @@ const Dashboard = () => {
             
             {/* === 1. TOP HEADER + SEARCH BAR === */}
             <div className="dashboard-top-header">
-                <input type="text" placeholder="Filter..." className="search-filter-input" /> {/* [cite: 7, 77] */}
+                <input type="text" placeholder="Filter..." className="search-filter-input" />
             </div>
 
             {/* === 2. ROW 1: 4 TOP SUMMARY CARDS (Horizontal) === */}
@@ -228,7 +228,7 @@ const Dashboard = () => {
                     <div className="order-summary-section">
                         <div className="section-header">
                             <h2>Order Summary</h2>
-                            {/* Dummy text from PDF [cite: 88] */}
+                            {/* Dummy text from PDF */}
                             <p>hijokpirngntop[gtgkoikokyhikoy[phokphnoy</p> 
                         </div>
                         <div className="summary-cards-container">
@@ -287,8 +287,8 @@ const Tables = () => {
         }
 
         const newTable = {
-            name: tableName || null, // Table name is optional [cite: 35]
-            chairs: chairCount, // [cite: 34]
+            name: tableName || null, // Table name is optional
+            chairs: chairCount,
             isReserved: false,
         };
 
@@ -301,21 +301,21 @@ const Tables = () => {
     };
 
     const handleDeleteTable = (id) => {
-        // [cite: 31] Reserved tables cannot be deleted
+        // Reserved tables cannot be deleted
         const tableToDelete = tables.find(table => table.id === id);
-        if (tableToDelete.isReserved) {
+        if (tableToDelete?.isReserved) {
             alert("Reserved tables cannot be deleted.");
             return;
         }
         
         if (window.confirm("Are you sure you want to delete this table?")) {
             const updatedTables = tables.filter(table => table.id !== id);
-            const newTables = saveTables(updatedTables); // This re-indexes 
+            const newTables = saveTables(updatedTables); // This re-indexes
             setTables(newTables);
         }
     };
     
-    const availableSizes = [2, 4, 6, 8]; // [cite: 34]
+    const availableSizes = [2, 4, 6, 8];
     
     // Default 30 dummy tables if local storage is empty
     const displayTables = tables.length > 0 ? tables : Array.from({ length: MAX_TABLES }, (_, i) => ({
@@ -333,7 +333,7 @@ const Tables = () => {
     return (
         <div className="tables-container page-padding">
             <header className="tables-header">
-                <h1>Tables</h1> {/* [cite: 174] */}
+                <h1>Tables</h1>
             </header>
 
             
@@ -453,7 +453,7 @@ const OrderCard = ({ order }) => (
 );
 
 const OrderLine = () => {
-    // Dummy Order Data [cite: 36, 38, 39, 40]
+    // Dummy Order Data
     const orders = [
         { id: 101, status: 'Processing', type: 'Dine In', table: '05', chef: 'Manesh', time: '10m', totalItems: 3, items: [{name: 'Biryani', qty: 1}, {name: 'Naan', qty: 2}] },
         { id: 102, status: 'Done', type: 'Take Away', chef: 'Pritam', time: '0m', totalItems: 5, items: [{name: 'Pizza', qty: 1}, {name: 'Coke', qty: 4}] },
@@ -495,14 +495,14 @@ const MenuItemCard = ({ item }) => (
         <div className="item-image-placeholder">{item.name[0]}</div>
         <div className="item-details">
             <h4 className="item-name">{item.name}</h4>
-            <p className="item-description">Description: {item.description}</p> {/* [cite: 47] */}
-            <p className="item-price">Price: ₹{item.price}</p> {/* [cite: 48] */}
-            <p className="item-prep-time">Average Prep Time: {item.averagePreparationTime}</p> {/* [cite: 49] */}
-            <p className="item-category">Category: {item.category}</p> {/* [cite: 50] */}
+            <p className="item-description">Description: {item.description}</p>
+            <p className="item-price">Price: ₹{item.price}</p>
+            <p className="item-prep-time">Average Prep Time: {item.averagePreparationTime}</p>
+            <p className="item-category">Category: {item.category}</p>
             <div className="item-footer-full">
                 <span className={`item-stock ${item.stock > 10 ? 'in-stock' : 'low-stock'}`}>
                     InStock: {item.stock > 0 ? 'Yes' : 'No'}
-                </span> {/* [cite: 51] */}
+                </span>
                 <span className="item-rating">Rating: {item.rating} ⭐</span>
             </div>
         </div>
@@ -510,7 +510,7 @@ const MenuItemCard = ({ item }) => (
 );
 
 const Menu = () => {
-    // Dummy Menu Data with all fields as per SRD [cite: 45]
+    // Dummy Menu Data with all fields as per SRD
     const menuItems = [
         { id: 1, name: 'Tandoori Roti', description: 'Classic Indian bread', price: 50, averagePreparationTime: '10 Mins', category: 'Bread', stock: 50, rating: 4.5 },
         { id: 2, name: 'Chicken Biryani', description: 'Spicy chicken rice dish', price: 250, averagePreparationTime: '20 Mins', category: 'Rice', stock: 15, rating: 4.8 },
