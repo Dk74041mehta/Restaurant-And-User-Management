@@ -1,22 +1,31 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, 
-  setPersistence, inMemoryPersistence 
-} from 'firebase/auth'; 
-// Firestore ke zaroori functions import karein
-import { 
-  getFirestore, doc, setDoc, collection, query, onSnapshot, 
-  addDoc, deleteDoc, writeBatch, updateDoc,
-  setLogLevel 
-} from 'firebase/firestore'; 
+vimport React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { LayoutDashboard, Users, Utensils, Table, ChefHat, Search, DollarSign, BarChart3, Clock, TrendingUp, Plus, Trash2, X, AlertTriangle, Check, ListChecks, ChevronDown, Edit3, Save, Package } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Global variables (MUST BE USED)
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+// --- Local Storage Utilities ---
+const STORAGE_KEY = 'restaurant_dashboard_data_v3';
+
+// Data ko Local Storage se load karne ka function
+const loadState = () => {
+    try {
+        const serializedState = localStorage.getItem(STORAGE_KEY);
+        if (serializedState === null) return undefined;
+        return JSON.parse(serializedState);
+    } catch (e) {
+        console.error("Error loading state from localStorage:", e);
+        return undefined;
+    }
+};
+
+// Data ko Local Storage mein save karne ka function
+const saveState = (state) => {
+    try {
+        const serializedState = JSON.stringify(state);
+        localStorage.setItem(STORAGE_KEY, serializedState);
+    } catch (e) {
+        console.error("Error saving state to localStorage:", e);
+    }
+};
 
 const MAX_TABLES = 30; // Maximum number of tables 30 par set
 
@@ -42,8 +51,18 @@ const MOCK_MENU = [
 ];
 const CATEGORIES = ['All', 'Main Course', 'Breads', 'Rice & Biryani', 'Desserts', 'Beverages'];
 
+// Initial Tables Mock Data (if Local Storage is empty)
+const initialMockTables = Array.from({ length: 15 }, (_, i) => ({
+    id: `T${i + 1}-${Date.now() + i}`, // Unique ID for Local Storage
+    number: i + 1,
+    size: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
+    reserved: i < 3 ? true : false,
+    name: i === 0 ? 'Window View' : '',
+    bookedBy: i < 3 ? 'Mock Customer' : null,
+    persons: i < 3 ? [2, 4, 6, 8][Math.floor(Math.random() * 4)] : 0,
+}));
 
-// Analytics Mock Data (retained for dashboard)
+// Analytics Mock Data 
 const MOCK_STATS = [
   { title: "Kul Chefs", value: "04", icon: ChefHat, color: "bg-indigo-500", text: "text-indigo-500" },
   { title: "Kul Aamdani", value: "₹ 12K", icon: DollarSign, color: "bg-green-500", text: "text-green-500" },
@@ -73,188 +92,74 @@ const MOCK_CHEF_PERFORMANCE = [
 ];
 
 
-// --- Firebase Initialization and Auth Logic ---
-const useFirebase = () => {
-  const [db, setDb] = useState(null);
-  const [auth, setAuth] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isAuthReady, setIsAuthReady] = useState(false); // Auth readiness tracker
+// --- LOCAL STORAGE BASED TABLES LOGIC (Replacement for Firestore) ---
 
-  useEffect(() => {
-    try {
-      const app = initializeApp(firebaseConfig);
-      const dbInstance = getFirestore(app);
-      const authInstance = getAuth(app);
-      
-      // Persistence set to in-memory 
-      setPersistence(authInstance, inMemoryPersistence);
-      
-      setDb(dbInstance);
-      setAuth(authInstance);
-
-      let unsubscribeAuth = () => {};
-
-      const setupAuth = async () => {
-        try {
-          if (initialAuthToken) {
-            await signInWithCustomToken(authInstance, initialAuthToken);
-          } else {
-            await signInAnonymously(authInstance);
-          }
-
-          unsubscribeAuth = onAuthStateChanged(authInstance, (user) => {
-            if (user) {
-              setUserId(user.uid);
-              console.log("Firebase Auth State Changed: Logged in. UID:", user.uid);
-            } else {
-              const fallbackId = 'anon-' + crypto.randomUUID();
-              setUserId(fallbackId); 
-              console.warn("Firebase Auth State Changed: No user found. Using fallback ID:", fallbackId);
-            }
-            setIsAuthReady(true);
-          }, (error) => {
-            console.error("onAuthStateChanged error:", error);
-            setIsAuthReady(true); 
-            setUserId('error-anon-' + crypto.randomUUID());
-          });
-
-        } catch (error) {
-          console.error("Initial Firebase setup/sign-in failed:", error);
-          setIsAuthReady(true);
-          setUserId('error-fail-' + crypto.randomUUID());
-        }
-      };
-
-      setupAuth();
-      return () => unsubscribeAuth(); 
-    } catch (error) {
-      console.error("Firebase initialization failed:", error);
-      setIsAuthReady(true);
-      setUserId('init-fail-' + crypto.randomUUID());
-    }
-  }, []);
-
-  return { db, auth, userId, isAuthReady }; 
-};
-
-
-// --- Tables Firestore Hook and Logic (Retained) ---
-
-const useTablesData = (db, userId, isAuthReady) => { 
-  const [tables, setTables] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!db || !userId || !isAuthReady) { 
-        setTables([]);
-        setLoading(true);
-        return;
-    }
-
-    const tablesCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'tables');
-    const q = query(tablesCollectionRef); 
-
-    setLoading(true);
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedTables = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      fetchedTables.sort((a, b) => (a.number || 0) - (b.number || 0));
-      
-      setTables(fetchedTables);
-      setLoading(false);
-      console.log(`Successfully fetched ${fetchedTables.length} tables.`);
-    }, (error) => {
-      console.error("Firestore Error Fetching Tables:", error.message);
-      setLoading(false);
-      setTables([]);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [db, userId, isAuthReady]); 
-
-  return { tables, loading };
-};
-
-const handleAddTable = async (db, userId, tables, name, size) => {
+// Nayi table add karne ka function (Local State use karte hue)
+const handleAddTable = (tables, setTables, name, size) => {
   if (tables.length >= MAX_TABLES) {
     console.warn("Maximum table limit reached.");
     return;
   }
   
   const newTableNumber = tables.length + 1;
-
-  try {
-    const tablesCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'tables');
-    await addDoc(tablesCollectionRef, {
+  const newTable = {
+      id: `T${newTableNumber}-${Date.now()}`, // Unique ID
       number: newTableNumber,
       size: size,
       reserved: false,
       name: name,
       bookedBy: null,
       persons: 0,
-    });
-    console.log("Table added successfully:", newTableNumber);
-  } catch (error) {
-    console.error("Error adding table:", error);
-  }
+  };
+  setTables(prev => [...prev, newTable]);
+  console.log("Table added successfully:", newTableNumber);
 };
 
-const handleDeleteTable = async (db, userId, tables, tableToDelete) => {
-  try {
-    const tablesCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'tables');
-    const tableRef = doc(tablesCollectionRef, tableToDelete.id);
-    
-    await deleteDoc(tableRef);
+// Table delete karne ka function (Local State use karte hue)
+const handleDeleteTable = (tables, setTables, tableToDelete) => {
+  if (tableToDelete.reserved) return; // Safety check
 
-    const remainingToUpdate = tables
-        .filter(t => t.id !== tableToDelete.id)
-        .sort((a, b) => (a.number || 0) - (b.number || 0));
+  const remainingToUpdate = tables
+      .filter(t => t.id !== tableToDelete.id)
+      .sort((a, b) => (a.number || 0) - (b.number || 0));
 
-    const batch = writeBatch(db);
-    remainingToUpdate.forEach((table, index) => {
-        const newNumber = index + 1;
-        if (table.number !== newNumber) { 
-            const ref = doc(tablesCollectionRef, table.id);
-            batch.update(ref, { number: newNumber });
-        }
-    });
-    await batch.commit();
-    
-    console.log(`Table T-${tableToDelete.number} deleted and tables re-sequenced via batch.`);
-    
-  } catch (error) {
-    console.error("Error deleting table:", error);
-  }
+  // Re-sequence the remaining tables
+  const newTables = remainingToUpdate.map((table, index) => ({
+      ...table,
+      number: index + 1,
+  }));
+  
+  setTables(newTables);
+  console.log(`Table T-${tableToDelete.number} deleted and tables re-sequenced.`);
 };
 
-const handleBookTable = async (db, userId, tableToBook) => {
-  try {
-    const tablesCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'tables');
-    const tableRef = doc(tablesCollectionRef, tableToBook.id);
-    
-    const newReservedState = !tableToBook.reserved;
-    
-    await updateDoc(tableRef, { 
-      reserved: newReservedState,
-      bookedBy: newReservedState ? 'Customer Name (Mock)' : null,
-      persons: newReservedState ? tableToBook.size : 0,
-    });
-    console.log(`Table T-${tableToBook.number} ${newReservedState ? 'booked' : 'unbooked'}.`);
-  } catch (error) {
-    console.error("Error booking/unbooking table:", error);
-  }
+// Table book/unbook karne ka function (Local State use karte hue)
+const handleBookTable = (tables, setTables, tableToBook) => {
+  const newReservedState = !tableToBook.reserved;
+  
+  const newTables = tables.map(t => 
+      t.id === tableToBook.id
+          ? {
+              ...t,
+              reserved: newReservedState,
+              bookedBy: newReservedState ? 'Mock Customer Name' : null,
+              persons: newReservedState ? t.size : 0,
+          }
+          : t
+  );
+  setTables(newTables);
+  console.log(`Table T-${tableToBook.number} ${newReservedState ? 'booked' : 'unbooked'}.`);
 };
 
-// Confirmation Modal (Retained)
+// Confirmation Modal (Retained, prop changes applied)
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, table }) => {
   if (!isOpen) return null;
   const isReserved = table.reserved;
+
+  // Use correct local logic
+  const confirmAction = () => {
+      onConfirm(table);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -285,7 +190,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, table }) => {
           {!isReserved && (
             <button 
               type="button" 
-              onClick={onConfirm} 
+              onClick={confirmAction} 
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-lg transition-colors flex items-center"
             >
               <Trash2 className="w-4 h-4 mr-2" /> Delete Confirm
@@ -296,7 +201,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, table }) => {
     </div>
   );
 };
-// TableIconSVG, TableCard, AddTableDottedBox, AddTableModal (Retained)
+
+// TableIconSVG, TableCard, AddTableDottedBox, AddTableModal (Modified props)
 const TableIconSVG = ({ isReserved }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -313,7 +219,8 @@ const TableIconSVG = ({ isReserved }) => (
     <line x1="17" y1="7" x2="17" y2="17" />
   </svg>
 );
-const TableCard = ({ db, userId, table, tables }) => {
+
+const TableCard = ({ table, tables, setTables }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isReserved = table.reserved;
 
@@ -324,13 +231,13 @@ const TableCard = ({ db, userId, table, tables }) => {
   
   const handleConfirmDelete = () => {
     if (!isReserved) {
-        handleDeleteTable(db, userId, tables, table);
+        handleDeleteTable(tables, setTables, table);
     }
     setShowDeleteConfirm(false);
   };
 
   const handleToggleBooking = () => {
-    handleBookTable(db, userId, table);
+    handleBookTable(tables, setTables, table);
   };
 
   return (
@@ -384,6 +291,7 @@ const TableCard = ({ db, userId, table, tables }) => {
     </>
   );
 };
+
 const AddTableDottedBox = ({ onClick, isMax }) => (
   <button
     onClick={onClick}
@@ -400,6 +308,7 @@ const AddTableDottedBox = ({ onClick, isMax }) => (
     {isMax && <span className="text-xs mt-1">(Max {MAX_TABLES})</span>}
   </button>
 );
+
 const AddTableModal = ({ isMax, onClose, onAdd }) => {
   const [tableName, setTableName] = useState('');
   const [chairSize, setChairSize] = useState(4);
@@ -482,10 +391,12 @@ const AddTableModal = ({ isMax, onClose, onAdd }) => {
     </div>
   );
 };
-// TablesView (Retained)
-const TablesView = ({ db, userId, tables, tablesLoading, searchQuery }) => {
+
+// TablesView (Modified props)
+const TablesView = ({ tables, setTables, searchQuery }) => {
   const [showAddTableModal, setShowAddTableModal] = useState(false);
   const isMaxTables = tables.length >= MAX_TABLES;
+  const tablesLoading = false; // Always false since using local state
 
   const filteredTables = useMemo(() => {
     if (!searchQuery) return tables;
@@ -496,6 +407,16 @@ const TablesView = ({ db, userId, tables, tablesLoading, searchQuery }) => {
       table.name?.toLowerCase().includes(lowerCaseQuery)
     );
   }, [tables, searchQuery]);
+
+  // Use useCallback to memoize the functions passed down
+  const onAddTable = useCallback((name, size) => {
+    handleAddTable(tables, setTables, name, size);
+  }, [tables, setTables]);
+
+  const handleConfirmDelete = useCallback((tableToDelete) => {
+      handleDeleteTable(tables, setTables, tableToDelete);
+  }, [tables, setTables]);
+
 
   return (
     <div className="space-y-6">
@@ -524,10 +445,9 @@ const TablesView = ({ db, userId, tables, tablesLoading, searchQuery }) => {
           {filteredTables.map(table => (
             <TableCard 
               key={table.id} 
-              db={db} 
-              userId={userId} 
               table={table} 
-              tables={tables}
+              tables={tables} 
+              setTables={setTables}
             />
           ))}
 
@@ -542,7 +462,7 @@ const TablesView = ({ db, userId, tables, tablesLoading, searchQuery }) => {
         <AddTableModal 
           isMax={isMaxTables} 
           onClose={() => setShowAddTableModal(false)} 
-          onAdd={(name, size) => handleAddTable(db, userId, tables, name, size)}
+          onAdd={onAddTable}
         />
       )}
     </div>
@@ -644,11 +564,11 @@ const OrderCard = ({ order }) => {
     );
 };
 
-const OrderLineView = ({ searchQuery }) => {
-    const [filterStatus, setFilterStatus] = useState('All'); // Added Filter State
+const OrderLineView = ({ orders, searchQuery }) => {
+    const [filterStatus, setFilterStatus] = useState('All'); 
 
     const filteredOrders = useMemo(() => {
-        let result = MOCK_ORDERS;
+        let result = orders;
 
         // 1. Filter by Status
         if (filterStatus !== 'All') {
@@ -673,14 +593,14 @@ const OrderLineView = ({ searchQuery }) => {
         });
 
         return result;
-    }, [filterStatus, searchQuery]);
+    }, [filterStatus, searchQuery, orders]);
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Order Line ({filteredOrders.length} Orders)</h2>
                 
-                {/* Status Filter Dropdown (Added Filter Button) */}
+                {/* Status Filter Dropdown */}
                 <div className="relative inline-block text-left">
                     <select
                         value={filterStatus}
@@ -718,19 +638,19 @@ const OrderLineView = ({ searchQuery }) => {
 
 // --- MENU MANAGEMENT SECTION ---
 
-// Menu Item Model (For state management in Menu Management)
+// Menu Item Model
 const EMPTY_MENU_ITEM = {
     id: null,
     name: '',
     description: '',
     price: 0,
-    averagePreparationTime: 15, // in minutes
+    prepTime: 15, // Changed from averagePreparationTime for brevity
     category: CATEGORIES[1], // Default to first real category
     stock: 0,
 };
 
-// Modal for adding/editing menu item
-const MenuItemModal = ({ isOpen, onClose, item, onSave }) => {
+// Modal for adding/editing menu item (COMPLETED)
+const MenuItemModal = ({ isOpen, onClose, item, onSave, onDelete }) => {
     const [formData, setFormData] = useState(item || EMPTY_MENU_ITEM);
 
     useEffect(() => {
@@ -749,9 +669,10 @@ const MenuItemModal = ({ isOpen, onClose, item, onSave }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Basic Validation (you can add more)
-        if (!formData.name || !formData.category || formData.price <= 0 || formData.stock < 0) {
-            alert("Please fill all required fields correctly.");
+        // Basic Validation
+        if (!formData.name || !formData.category || formData.price <= 0 || formData.stock < 0 || formData.prepTime <= 0) {
+            // Using console.error instead of alert as per instructions
+            console.error("Please fill all required fields correctly (Name, Category, Price > 0, Prep Time > 0, Stock >= 0).");
             return;
         }
         onSave(formData);
@@ -788,52 +709,64 @@ const MenuItemModal = ({ isOpen, onClose, item, onSave }) => {
                         </div>
                     </div>
                     
-                    {/* Description */}
+                    {/* Description (Completed) */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea name="description" value={formData.description} onChange={handleChange} rows="3"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                        />
+                        <textarea name="description" value={formData.description} onChange={handleChange} rows="2"
+                            placeholder="Briefly describe the dish..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                        ></textarea>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
                         {/* Price */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                            <input type="number" name="price" value={formData.price} onChange={handleChange} min="1" required
+                            <input type="number" name="price" value={formData.price} onChange={handleChange} required min="1" step="any"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
                         {/* Prep Time */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Prep Time (Min)</label>
-                            <input type="number" name="averagePreparationTime" value={formData.averagePreparationTime} onChange={handleChange} min="1" required
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Prep Time (Mins)</label>
+                            <input type="number" name="prepTime" value={formData.prepTime} onChange={handleChange} required min="1"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
-                         {/* Stock */}
-                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                            <input type="number" name="stock" value={formData.stock} onChange={handleChange} min="0" required
+                        {/* Stock */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Stock Available</label>
+                            <input type="number" name="stock" value={formData.stock} onChange={handleChange} required min="0"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
                     </div>
                     
-                    <div className="flex justify-end space-x-3 pt-4">
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
-                            className="px-6 py-2 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit" 
-                            className="px-6 py-2 text-base font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-lg transition-colors flex items-center"
-                        >
-                            <Save className="w-5 h-5 mr-2" /> Save Item
-                        </button>
+                    <div className="flex justify-between items-center pt-4">
+                        {item && (
+                            <button 
+                                type="button"
+                                onClick={() => { onDelete(item.id); onClose(); }}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center shadow-md"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                            </button>
+                        )}
+                        <div className='flex space-x-3 ml-auto'>
+                            <button 
+                                type="button" 
+                                onClick={onClose} 
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit" 
+                                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-lg transition-colors flex items-center"
+                            >
+                                <Save className="w-4 h-4 mr-2" /> {item ? 'Save Changes' : 'Add Item'}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -841,16 +774,34 @@ const MenuItemModal = ({ isOpen, onClose, item, onSave }) => {
     );
 };
 
-// Main Menu Management View
-const MenuManagementView = ({ searchQuery }) => {
-    const [menuItems, setMenuItems] = useState(MOCK_MENU);
-    const [selectedCategory, setSelectedCategory] = useState('All');
+const MenuCard = ({ item, onEdit }) => (
+    <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex justify-between items-center transition duration-300 hover:shadow-xl hover:border-indigo-300">
+        <div className="min-w-0 pr-3">
+            <h4 className="text-lg font-bold text-gray-800 truncate">{item.name}</h4>
+            <p className="text-xs text-gray-500 truncate">{item.description}</p>
+            <p className="text-sm font-medium text-indigo-600 mt-1">₹{item.price.toFixed(2)}</p>
+        </div>
+        <div className="text-right">
+            <p className="text-sm font-semibold text-gray-700">{item.stock} in Stock</p>
+            <p className="text-xs text-gray-500">Prep: {item.prepTime} mins</p>
+            <button
+                onClick={() => onEdit(item)}
+                className="mt-2 text-indigo-600 hover:text-indigo-800 transition-colors p-1 rounded-full hover:bg-indigo-50"
+            >
+                <Edit3 className="w-4 h-4" />
+            </button>
+        </div>
+    </div>
+);
+
+
+const MenuManagementView = ({ menu, setMenu, searchQuery }) => {
+    const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
 
-    // Filtered Menu Items
-    const filteredMenuItems = useMemo(() => {
-        let result = menuItems;
+    const filteredMenu = useMemo(() => {
+        let result = menu;
 
         // 1. Filter by Category
         if (selectedCategory !== 'All') {
@@ -867,405 +818,288 @@ const MenuManagementView = ({ searchQuery }) => {
         }
 
         return result;
-    }, [menuItems, selectedCategory, searchQuery]);
+    }, [menu, selectedCategory, searchQuery]);
     
-    // Handlers
-    const handleSaveItem = (itemData) => {
-        if (itemData.id) {
-            // Edit existing item
-            setMenuItems(prev => prev.map(item => item.id === itemData.id ? itemData : item));
-            console.log("Updated Menu Item:", itemData.name);
-        } else {
-            // Add new item
-            const newId = 'M' + String(menuItems.length + 1).padStart(3, '0');
-            const newItem = { ...itemData, id: newId };
-            setMenuItems(prev => [...prev, newItem]);
-            console.log("Added New Menu Item:", newItem.name);
-        }
-    };
-    
-    const handleDeleteItem = (id) => {
-        // Use custom modal for confirmation (we will use a simple confirm for now in this mock)
-        if (window.confirm("Are you sure you want to delete this menu item?")) {
-            setMenuItems(prev => prev.filter(item => item.id !== id));
-            console.log(`Deleted Menu Item: ${id}`);
-        }
-    };
+    // CRUD Operations (Local Storage based)
+    const handleSaveItem = useCallback((itemData) => {
+        setMenu(prevMenu => {
+            if (itemData.id) {
+                // Edit existing
+                return prevMenu.map(item => item.id === itemData.id ? itemData : item);
+            } else {
+                // Add new
+                const newId = 'M' + String(prevMenu.length + 1).padStart(3, '0') + '-' + Date.now();
+                return [...prevMenu, { ...itemData, id: newId }];
+            }
+        });
+    }, [setMenu]);
+
+    const handleDeleteItem = useCallback((itemId) => {
+        setMenu(prevMenu => prevMenu.filter(item => item.id !== itemId));
+    }, [setMenu]);
+
 
     const handleOpenEdit = (item) => {
         setEditingItem(item);
         setIsModalOpen(true);
     };
 
-    const handleOpenAdd = () => {
-        setEditingItem(null); // Clear editing item for 'Add' mode
+    const handleOpenNew = () => {
+        setEditingItem(null);
         setIsModalOpen(true);
     };
 
     return (
         <div className="space-y-6">
-            
-            {/* Header and Add Button */}
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Menu Management ({filteredMenuItems.length} Items)</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-800">Menu Management ({filteredMenu.length} Items)</h2>
                 <button
-                    onClick={handleOpenAdd}
-                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 shadow-lg transition-colors flex items-center"
+                    onClick={handleOpenNew}
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-lg transition-colors flex items-center"
                 >
-                    <Plus className="w-4 h-4 mr-2" /> Naya Item Jodein
+                    <Plus className="w-4 h-4 mr-2" /> Item Jodein
                 </button>
             </div>
 
-            {/* Category Filter Tabs (Desktop 6 Design) */}
-            <div className="flex space-x-3 overflow-x-auto pb-2 border-b border-gray-200">
-                {CATEGORIES.map(cat => (
+            {/* Category Filter */}
+            <div className="flex space-x-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {CATEGORIES.map(category => (
                     <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                            selectedCategory === cat
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200 shadow-sm ${
+                            selectedCategory === category
+                                ? 'bg-indigo-600 text-white shadow-indigo-400/50'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                     >
-                        {cat}
+                        {category}
                     </button>
                 ))}
             </div>
 
-            {/* Menu Item List */}
-            <div className="space-y-4">
-                {filteredMenuItems.length === 0 ? (
-                     <div className="text-center p-10 bg-white rounded-xl shadow-lg text-gray-500">
-                        <Package className="w-10 h-10 mx-auto mb-3" />
-                        <p className="text-lg">Koi Items Nahi Mile.</p>
-                        <p className="text-sm">Try changing the filter or search query.</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4">
-                        {filteredMenuItems.map(item => (
-                            <div key={item.id} className="bg-white p-4 rounded-xl shadow-md flex items-center justify-between transition-shadow hover:shadow-lg border-l-4 border-indigo-600">
-                                <div className="flex-1 min-w-0 pr-4">
-                                    <h3 className="text-lg font-bold text-gray-900 truncate">{item.name} <span className="text-sm font-normal text-gray-500 ml-2">({item.id})</span></h3>
-                                    <p className="text-sm text-gray-600 mb-2 truncate">{item.description}</p>
-                                    <div className="flex space-x-4 text-sm font-medium text-gray-700">
-                                        <p className="flex items-center"><DollarSign className="w-3.5 h-3.5 mr-1 text-green-600" /> ₹ {item.price}</p>
-                                        <p className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 text-indigo-600" /> {item.averagePreparationTime} min</p>
-                                        <p className="flex items-center"><TrendingUp className="w-3.5 h-3.5 mr-1 text-blue-600" /> Stock: {item.stock}</p>
-                                    </div>
+            {filteredMenu.length === 0 ? (
+                <div className="text-center p-10 bg-white rounded-xl shadow-lg text-gray-500">
+                    <Package className="w-10 h-10 mx-auto mb-3" />
+                    <p className="text-lg">Koi Menu Item Nahi Mila.</p>
+                    <p className="text-sm">Try changing the category or search query.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredMenu.map(item => (
+                        <MenuCard key={item.id} item={item} onEdit={handleOpenEdit} />
+                    ))}
+                </div>
+            )}
+            
+            {isModalOpen && (
+                <MenuItemModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    item={editingItem}
+                    onSave={handleSaveItem}
+                    onDelete={handleDeleteItem}
+                />
+            )}
+        </div>
+    );
+};
+
+
+// --- Analytics Section Components ---
+
+const StatCard = ({ title, value, icon: Icon, color, text }) => (
+    <div className="bg-white p-5 rounded-xl shadow-lg flex items-center transition duration-300 transform hover:scale-[1.02] hover:shadow-xl">
+        <div className={`p-3 rounded-full ${color} bg-opacity-20 mr-4`}>
+            <Icon className={`w-6 h-6 ${text}`} />
+        </div>
+        <div>
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <p className="text-2xl font-bold text-gray-800">{value}</p>
+        </div>
+    </div>
+);
+
+const ChefPerformanceCard = ({ chef }) => (
+    <div className="flex justify-between items-center p-4 border-b last:border-b-0">
+        <div className="flex items-center space-x-3">
+            <span className="text-2xl">👨‍🍳</span>
+            <span className="font-semibold text-gray-800">{chef.name}</span>
+        </div>
+        <div className="text-center">
+            <span className="text-xl font-bold text-indigo-600">{chef.orders.toString().padStart(2, '0')}</span>
+            <p className="text-xs text-gray-500">Orders</p>
+        </div>
+        <span className={`text-xs font-medium px-3 py-1 rounded-full ${chef.status === 'Busy' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+            {chef.status}
+        </span>
+    </div>
+);
+
+
+// --- MAIN APP COMPONENT ---
+
+const App = () => {
+    // Load state from Local Storage or use initial mocks
+    const savedState = useMemo(() => loadState(), []); 
+    
+    const [tables, setTables] = useState(savedState?.tables || initialMockTables);
+    const [orders, setOrders] = useState(savedState?.orders || MOCK_ORDERS);
+    const [menu, setMenu] = useState(savedState?.menu || MOCK_MENU);
+    
+    // Other mock data for read-only sections
+    const stats = MOCK_STATS; 
+    const orderSummary = MOCK_ORDER_SUMMARY;
+    const revenueData = MOCK_REVENUE_DATA;
+    const chefPerformance = MOCK_CHEF_PERFORMANCE;
+    
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('dashboard'); // Tabs: dashboard, tables, orderLine, menu
+
+    // Local Storage Persistence useEffect
+    useEffect(() => {
+        saveState({ tables, orders, menu });
+        console.log("State saved to Local Storage.");
+    }, [tables, orders, menu]); // Save whenever these core states change
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const handleTabClick = (tab) => {
+        setActiveTab(tab);
+        setSearchQuery(''); // Clear search when switching tabs
+    };
+
+    // Rendered Content based on active tab
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'tables':
+                return <TablesView tables={tables} setTables={setTables} searchQuery={searchQuery} />;
+            case 'orderLine':
+                return <OrderLineView orders={orders} searchQuery={searchQuery} />;
+            case 'menu':
+                return <MenuManagementView menu={menu} setMenu={setMenu} searchQuery={searchQuery} />;
+            case 'dashboard':
+            default:
+                return (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Dashboard Left Column */}
+                        <div className="lg:col-span-2 space-y-8">
+                            {/* Orders Summary & Revenue Graph */}
+                            <div className="bg-white p-6 rounded-xl shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center"><BarChart3 className="w-5 h-5 mr-2 text-indigo-500" /> Orders & Revenue Summary</h3>
+                                
+                                <div className="grid grid-cols-3 gap-4 text-center mb-6">
+                                    {orderSummary.map((item, index) => (
+                                        <div key={index} className={`p-3 rounded-lg ${item.color}`}>
+                                            <p className={`text-2xl font-bold ${item.text}`}>{item.count.toString().padStart(2, '0')}</p>
+                                            <p className="text-sm text-gray-600">{item.label}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleOpenEdit(item)}
-                                        title="Edit Item"
-                                        className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 transition-colors"
-                                    >
-                                        <Edit3 className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteItem(item.id)}
-                                        title="Delete Item"
-                                        className="p-2 rounded-full text-red-600 hover:bg-red-100 transition-colors"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
+                                
+                                <h4 className="text-lg font-medium text-gray-800 mb-2 flex items-center"><TrendingUp className="w-4 h-4 mr-1 text-green-500" /> Weekly Revenue</h4>
+                                <div className="h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                                            <XAxis dataKey="name" stroke="#333" />
+                                            <YAxis tickFormatter={(tick) => `₹${(tick / 1000).toFixed(1)}K`} stroke="#333" />
+                                            <Tooltip formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']} />
+                                            <Bar dataKey="Revenue" fill="#4f46e5" radius={[5, 5, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Dashboard Right Column (Chef Performance) */}
+                        <div className="lg:col-span-1 space-y-8">
+                            <div className="bg-white p-6 rounded-xl shadow-lg">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center"><ChefHat className="w-5 h-5 mr-2 text-red-500" /> Chef Performance</h3>
+                                <div className="divide-y divide-gray-100">
+                                    {chefPerformance.map(chef => (
+                                        <ChefPerformanceCard key={chef.name} chef={chef} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 font-inter antialiased">
+            <script src="https://cdn.tailwindcss.com"></script>
+            {/* Header */}
+            <header className="bg-white shadow-md sticky top-0 z-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row justify-between items-center">
+                    <div className="flex items-center space-x-3 mb-3 sm:mb-0">
+                        <span className="text-3xl text-indigo-600">🍜</span>
+                        <h1 className="text-2xl font-bold text-gray-900">Restaurant Ops Hub</h1>
+                    </div>
+                    {/* Search Filter */}
+                    <div className="relative w-full sm:w-80">
+                        <input
+                            type="text"
+                            placeholder="Tables, Orders, ya Menu Search Karein..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            className="p-2 pl-10 w-full border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 shadow-inner"
+                        />
+                        <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    </div>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Navigation Tabs */}
+                <div className="bg-white p-2 rounded-xl shadow-lg mb-8 flex space-x-1 sm:space-x-3 overflow-x-auto sticky top-20 z-10">
+                    {[
+                        { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+                        { id: 'tables', name: 'Tables', icon: Table },
+                        { id: 'orderLine', name: 'Order Line', icon: Utensils },
+                        { id: 'menu', name: 'Menu', icon: Package },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabClick(tab.id)}
+                            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex-shrink-0 ${
+                                activeTab === tab.id
+                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-300/50'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                            }`}
+                        >
+                            <tab.icon className="w-5 h-5" />
+                            <span>{tab.name}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Analytics Section (Always Visible) */}
+                <section className="mb-10">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {stats.map(stat => (
+                            <StatCard 
+                                key={stat.title} 
+                                title={stat.title} 
+                                value={stat.value} 
+                                icon={stat.icon} 
+                                color={stat.color} 
+                                text={stat.text}
+                            />
                         ))}
                     </div>
-                )}
-            </div>
+                </section>
+                
+                {/* Main Content Area */}
+                {renderContent()}
 
-            {/* Menu Item Add/Edit Modal */}
-            <MenuItemModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                item={editingItem}
-                onSave={handleSaveItem}
-            />
+            </main>
         </div>
     );
-};
-
-
-// --- Analytics Dashboard Components (Retained) ---
-
-const StatsCard = ({ title, value, icon: Icon, color, text }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-xl flex items-center justify-between transition-transform hover:scale-[1.02]">
-    <div>
-      <p className="text-2xl font-bold text-gray-800">{value}</p>
-      <p className="text-sm text-gray-500 font-medium mt-1">{title}</p>
-    </div>
-    <div className={`p-3 rounded-xl ${color}`}>
-      <Icon className={`w-6 h-6 text-white`} />
-    </div>
-  </div>
-);
-
-const OrderSummaryCard = () => (
-  <div className="bg-white p-6 rounded-2xl shadow-xl h-full flex flex-col">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-lg font-semibold text-gray-800">Order Summary</h3>
-      <select className="text-sm border rounded-lg p-1">
-        <option>Daily</option>
-        <option>Weekly</option>
-        <option>Monthly</option>
-      </select>
-    </div>
-    <div className="space-y-4 flex-grow">
-      {MOCK_ORDER_SUMMARY.map((item, index) => (
-        <div key={index} className={`flex items-center p-4 rounded-xl ${item.color}`}>
-          <div className={`w-2 h-2 rounded-full mr-3 ${item.color.replace('/50', '').replace('100', '600')}`}></div>
-          <span className="text-sm font-medium text-gray-700 flex-grow">{item.label}</span>
-          <span className={`text-xl font-bold ${item.text}`}>{item.count}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const RevenueChartCard = () => (
-  <div className="bg-white p-6 rounded-2xl shadow-xl h-full flex flex-col">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="text-lg font-semibold text-gray-800">Revenue Chart</h3>
-      <select className="text-sm border rounded-lg p-1">
-        <option>Daily</option>
-        <option>Weekly</option>
-        <option>Monthly</option>
-        <option>Yearly</option>
-      </select>
-    </div>
-    <div className="flex-grow min-h-[250px] mt-4">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={MOCK_REVENUE_DATA}
-          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-          <XAxis dataKey="name" stroke="#6b7280" style={{ fontSize: '12px' }} />
-          <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} tickFormatter={(value) => `₹${value / 1000}K`} />
-          <Tooltip
-            formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
-            labelFormatter={(label) => `Day: ${label}`}
-            contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
-          />
-          <Bar dataKey="Revenue" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const ChefPerformanceCard = () => (
-  <div className="bg-white p-6 rounded-2xl shadow-xl col-span-full">
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">Chef Performance (Orders Taken)</h3>
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Chef Name</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders Taken</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Status</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {MOCK_CHEF_PERFORMANCE.map((chef, index) => (
-            <tr key={index} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
-                <ChefHat className="w-4 h-4 mr-2 text-indigo-500" />
-                {chef.name}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold">{String(chef.orders).padStart(2, '0')}</td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span
-                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    chef.status === 'Busy' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                  }`}
-                >
-                  {chef.status}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
-
-const AnalyticsView = () => (
-    <div className="space-y-6">
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {MOCK_STATS.map((stat, index) => (
-            <StatsCard key={index} {...stat} />
-            ))}
-        </section>
-
-        <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 h-auto">
-            <div className="col-span-1">
-            <OrderSummaryCard />
-            </div>
-            <div className="lg:col-span-1 xl:col-span-2">
-            <RevenueChartCard />
-            </div>
-        </section>
-
-        <section>
-            <ChefPerformanceCard />
-        </section>
-    </div>
-);
-
-
-// 1. Sidebar Component (Icons Only)
-const Sidebar = ({ activeTab, setActiveTab, userId }) => {
-  const tabs = [
-    { id: 'analytics', label: 'Analytics', icon: LayoutDashboard },
-    { id: 'tables', label: 'Tables/Chairs', icon: Table },
-    { id: 'orderline', label: 'Order Line', icon: Utensils },
-    { id: 'menu', label: 'Menu Management', icon: BarChart3 },
-  ];
-
-  return (
-    <div className="w-20 bg-white border-r border-gray-100 p-4 hidden md:flex flex-col items-center shadow-lg z-10 transition-all duration-300">
-      <div className="flex items-center justify-center h-16 mb-6">
-        <span className="text-xl font-extrabold text-gray-800 tracking-wider">R</span>
-      </div>
-      <nav className="space-y-4 w-full">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              title={tab.label}
-              className={`w-full flex items-center justify-center p-3 rounded-xl transition-all duration-200 group ${
-                isActive
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-indigo-600'
-              }`}
-            >
-              <Icon className="w-6 h-6" />
-            </button>
-          );
-        })}
-      </nav>
-      <div className="mt-auto pt-4 border-t border-gray-200 text-[10px] text-gray-500 w-full text-center">
-        <p className="font-semibold mb-1">User ID:</p>
-        <p className="break-all leading-tight">{userId ? userId : 'Anon'}</p>
-        <p className="mt-1 text-xs">{typeof __initial_auth_token !== 'undefined' ? 'Auth' : 'Anon'}</p>
-      </div>
-    </div>
-  );
-};
-
-// --- Main App Component ---
-const App = () => {
-  const [activeTab, setActiveTab] = useState('analytics');
-  const [searchQuery, setSearchQuery] = useState('');
-  const { db, auth, userId, isAuthReady } = useFirebase(); 
-  const { tables, loading: tablesLoading } = useTablesData(db, userId, isAuthReady);
-
-  // Clear search query when tab changes
-  useEffect(() => {
-    setSearchQuery('');
-  }, [activeTab]);
-
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  if (!isAuthReady) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-        <p className="ml-3 text-indigo-600">Authenticating User...</p>
-      </div>
-    );
-  }
-
-  if (!db || !userId) {
-     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <p className="text-red-500 font-bold">Error: Firebase failed to initialize or determine user ID.</p>
-      </div>
-    );
-  }
-
-  // Determine the search placeholder based on the active tab
-  const getSearchPlaceholder = () => {
-    switch (activeTab) {
-      case 'tables':
-        return 'Search Table Number or Name...';
-      case 'orderline':
-        return 'Search Order ID or Table/Location...';
-      case 'menu':
-        return 'Search Menu Item Name or Description...';
-      default:
-        return 'Search...';
-    }
-  };
-
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'analytics':
-        return <AnalyticsView />;
-      case 'tables':
-        return (
-          <TablesView 
-            db={db} 
-            userId={userId} 
-            tables={tables} 
-            tablesLoading={tablesLoading} 
-            searchQuery={searchQuery}
-          />
-        );
-      case 'orderline':
-        return <OrderLineView searchQuery={searchQuery} />; // New Order Line View
-      case 'menu':
-        return <MenuManagementView searchQuery={searchQuery} />; // New Menu Management View
-      default:
-        return <div className="p-6 text-gray-500">Select a Tab</div>;
-    }
-  };
-
-
-  return (
-    <div className="flex h-screen bg-gray-50 font-sans">
-      
-      {/* Sidebar (Icons Only) */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} userId={userId} />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        
-        {/* Header/Filter Section */}
-        <header className="bg-white p-4 md:p-6 border-b border-gray-200 flex items-center justify-between shadow-md z-0">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800 capitalize">
-            {activeTab === 'analytics' ? 'Analytics Dashboard' : activeTab === 'tables' ? 'Tables / Chairs Management' : activeTab === 'orderline' ? 'Order Line' : 'Menu Management'}
-          </h1>
-          <div className="relative flex items-center w-full max-w-sm md:max-w-md">
-            <Search className="absolute left-3 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder={getSearchPlaceholder()}
-              value={searchQuery}
-              onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-            />
-          </div>
-        </header>
-
-        {/* Dynamic Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
-          {renderContent()}
-          <div className="h-4"></div>
-        </main>
-      </div>
-    </div>
-  );
 };
 
 export default App;
