@@ -174,11 +174,11 @@ const rawCssStyles = `
     background-color: #CCCCCC;
   }
   .quantity-button-remove {
-    background-color: #FEE2E2; 
+    background-color: #CCCCCC; 
     color: #CCCCCC;
   }
   .quantity-button-remove:hover {
-    background-color: #FECACA; 
+    background-color: #CCCCCC; 
   }
   .quantity-display {
     width: 1.5rem;
