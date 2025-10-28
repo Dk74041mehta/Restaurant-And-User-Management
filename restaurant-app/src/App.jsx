@@ -382,8 +382,7 @@ const MenuManagement = ({ menu }) => {
     );
 };
 
-import React, { useState } from "react";
-import { Trash2 } from "lucide-react";
+
 
 // --- TABLE CARD COMPONENT ---
 // const TableCard = ({ table, onDelete }) => (
