@@ -504,52 +504,59 @@ const TablesManagement = ({ tables, setTables }) => {
       </div>
 
       {/* Add Table Modal */}
-      {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal-content w-full max-w-sm">
-            <div className="modal-header">
-              <h3 className="modal-header__title">Create New Table</h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="modal-close-btn"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="modal-body space-y-4">
-              <label className="modal-input-label">
-                <span className="modal-input-span">Table Name (Optional):</span>
-                <input
-                  type="text"
-                  value={newTableName}
-                  onChange={(e) => setNewTableName(e.target.value)}
-                  className="modal-input"
-                  placeholder="e.g., Booth 5"
-                />
-              </label>
-              <label className="modal-input-label">
-                <span className="modal-input-span">Capacity:</span>
-                <select
-                  value={newTableCapacity}
-                  onChange={(e) =>
-                    setNewTableCapacity(parseInt(e.target.value))
-                  }
-                  className="modal-input bg-white"
-                >
-                  {availableCapacities.map((cap) => (
-                    <option key={cap} value={cap}>
-                      {cap} Persons
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button onClick={handleAddTable} className="modal-submit-btn">
-                Create Table
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    {showAddModal && (
+  <div className="modal-overlay">
+    <div className="modal-content w-full max-w-sm">
+      <div className="modal-header">
+        <h3 className="modal-header__title">Create New Table</h3>
+        <button
+          onClick={() => setShowAddModal(false)}
+          className="modal-close-btn"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="modal-body space-y-4">
+        <label className="modal-input-label">
+          <span className="modal-input-span">Table Name (Optional):</span>
+          <input
+            type="text"
+            value={newTableName}
+            onChange={(e) => setNewTableName(e.target.value)}
+            className="modal-input"
+            placeholder="e.g., Booth 5"
+          />
+        </label>
+
+        <label className="modal-input-label">
+          <span className="modal-input-span">Capacity:</span>
+          <select
+            value={newTableCapacity}
+            onChange={(e) => setNewTableCapacity(Number(e.target.value))}
+            className="modal-input bg-white"
+          >
+            {availableCapacities.map((cap) => (
+              <option key={cap} value={cap}>
+                {cap} Persons
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          onClick={() => {
+            handleAddTable();
+            setShowAddModal(false); // ✅ auto-close modal after table creation
+          }}
+          className="modal-submit-btn"
+        >
+          Create Table
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Limit Message Modal */}
       {limitMessage && (
