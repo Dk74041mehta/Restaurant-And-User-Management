@@ -911,27 +911,534 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-// NOTE: The 'import "./App.css";' line has been permanently removed.
-// All styling is now implemented using Tailwind CSS classes for compliance.
+// --- Custom Raw CSS Styling ---
+const rawCssStyles = `
+  /* Global Resets and Fonts */
+  body {
+    background-color: #f0f0f0;
+    font-family: 'Inter', sans-serif;
+  }
 
-// --- Tailwind Configuration (Self-Contained Styling) ---
-// Since we can't use a separate CSS file, we include a style block for custom/complex elements
-const customStyles = `
-  /* Custom scrollbar hide for mobile feel */
+  /* Main App Container (Simulates a mobile frame) */
+  .app-container {
+    max-width: 512px; /* Equivalent to max-w-lg */
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: white;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Scrollbar Hide Utility (for mobile feel) */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
+    -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
 
-  /* Custom Checkmark Animation for Thank You Screen */
+  /* Header Styles */
+  .header-sticky {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-top: 3rem; /* Simulates safe area/status bar */
+    padding-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Search Input */
+  .search-wrapper {
+    position: relative;
+    margin-bottom: 1.25rem;
+  }
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem; /* Padding left for icon */
+    color: #374151; /* gray-700 */
+    background-color: #F3F4F6; /* gray-100 */
+    border: 1px solid #E5E7EB; /* gray-200 */
+    border-radius: 0.75rem; /* rounded-xl */
+    outline: none;
+    transition: border-color 150ms;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  .search-input:focus {
+    border-color: #DC2626; /* red-600 */
+    box-shadow: 0 0 0 1px #F87171; /* ring-red-500 */
+  }
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6B7280; /* gray-500 */
+  }
+
+  /* Category Navigation */
+  .category-nav {
+    display: flex;
+    overflow-x: scroll;
+    padding-bottom: 0.5rem;
+  }
+  .category-list {
+    display: flex;
+    gap: 0.75rem; /* space-x-3 */
+    padding-bottom: 0.5rem;
+  }
+  .category-button {
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px; /* rounded-full */
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 200ms;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+  .category-button-default {
+    background-color: white;
+    color: #4B5563; /* gray-700 */
+    border: 1px solid #E5E7EB; /* gray-200 */
+  }
+  .category-button-default:hover {
+    background-color: #F9FAFB;
+  }
+  .category-button-active {
+    background-color: #DC2626; /* red-600 */
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3), 0 4px 6px -4px rgba(220, 38, 38, 0.3);
+  }
+
+  /* Menu Item Card */
+  .menu-item-list {
+    padding: 1.25rem;
+    padding-top: 0.75rem;
+    padding-bottom: 5rem; /* Space for fixed footer */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .menu-item-card {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    border: 1px solid #F3F4F6;
+  }
+  .item-image {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+    margin-right: 1rem;
+    overflow: hidden;
+    background-color: #F3F4F6;
+  }
+  .item-details {
+    flex-grow: 1;
+  }
+  .item-name {
+    font-weight: 600;
+    color: #1F2937; /* gray-800 */
+  }
+  .item-price {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #DC2626; /* red-600 */
+  }
+
+  /* Quantity Controls */
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: #F3F4F6;
+    border-radius: 9999px;
+    padding: 0.25rem;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  .quantity-button {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 150ms;
+  }
+  .quantity-button-add {
+    background-color: #DC2626;
+    color: white;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  }
+  .quantity-button-add:hover {
+    background-color: #B91C1C;
+  }
+  .quantity-button-remove {
+    background-color: #FEE2E2; /* red-100 */
+    color: #DC2626;
+  }
+  .quantity-button-remove:hover {
+    background-color: #FECACA; /* red-200 */
+  }
+  .quantity-display {
+    width: 1.5rem;
+    text-align: center;
+    font-weight: 700;
+    color: #1F2937;
+  }
+  
+  /* Simple Add Button (when item is not in cart) */
+  .add-button-plus {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: #DC2626;
+    color: white;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.4);
+    transition: background-color 150ms;
+  }
+  .add-button-plus:hover {
+    background-color: #B91C1C;
+  }
+
+  /* Fixed Checkout Footer */
+  .footer-checkout {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 512px;
+    margin: 0 auto;
+    z-index: 20;
+  }
+  .checkout-button-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #DC2626;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px rgba(220, 38, 38, 0.4);
+    color: white;
+    cursor: pointer;
+    transition: background-color 150ms;
+  }
+  .checkout-button-bar:hover {
+    background-color: #B91C1C;
+  }
+  .checkout-summary-text {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .checkout-next-text {
+    font-size: 1.125rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Checkout/Details Page Styles */
+  .checkout-page-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 4rem; /* For sticky footer/swipe button */
+  }
+  .page-header {
+    background-color: white;
+    border-bottom: 1px solid #F3F4F6;
+    padding: 1rem 1.25rem 1rem 0.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .page-title {
+    flex-grow: 1;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-left: -2rem; /* Center the title over the back button space */
+  }
+
+  /* Mode Toggle */
+  .mode-toggle-wrapper {
+    padding: 1rem 1.25rem 0;
+  }
+  .mode-toggle-group {
+    display: flex;
+    background-color: #F3F4F6;
+    padding: 0.25rem;
+    border-radius: 9999px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  .mode-toggle-button {
+    flex: 1;
+    padding: 0.5rem 0;
+    font-weight: 600;
+    border-radius: 9999px;
+    transition: all 200ms;
+    color: #6B7280;
+    border: none;
+    background: transparent;
+  }
+  .mode-toggle-button.active {
+    background-color: white;
+    color: #DC2626;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* User Details Form */
+  .details-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background-color: white;
+    flex-grow: 1;
+  }
+  .details-form-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1F2937;
+  }
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    background-color: #F9FAFB;
+    transition: all 150ms;
+    outline: none;
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    border-color: #DC2626;
+    box-shadow: 0 0 0 1px #F87171;
+  }
+  .form-textarea {
+    resize: none;
+  }
+  .form-submit-button {
+    width: 100%;
+    padding: 1rem;
+    color: white;
+    font-weight: 700;
+    border-radius: 9999px;
+    transition: all 200ms;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .form-submit-button:not(:disabled) {
+    background-color: #DC2626;
+    box-shadow: 0 8px 10px rgba(220, 38, 38, 0.4);
+  }
+  .form-submit-button:not(:disabled):hover {
+    background-color: #B91C1C;
+  }
+  .form-submit-button:disabled {
+    background-color: #9CA3AF; /* gray-400 */
+    cursor: not-allowed;
+  }
+
+  /* Order Items List (Checkout Details) */
+  .order-list-card {
+    padding: 1rem;
+    border: 1px solid #F3F4F6;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  .order-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #E5E7EB;
+  }
+  .order-item-row:last-child {
+    border-bottom: none;
+  }
+  .order-item-name {
+    font-weight: 500;
+    color: #374151;
+  }
+  .order-item-price {
+    font-weight: 700;
+    color: #DC2626;
+    font-size: 0.875rem;
+  }
+  
+  /* Cooking Instructions Button */
+  .instructions-button {
+    width: 100%;
+    padding: 1rem;
+    text-align: center;
+    color: #4B5563;
+    font-weight: 600;
+    border: 2px dashed #D1D5DB;
+    border-radius: 0.75rem;
+    background-color: white;
+    transition: background-color 150ms;
+  }
+  .instructions-button:hover {
+    background-color: #F9FAFB;
+  }
+
+  /* User Details Display Card */
+  .user-details-display {
+    position: relative;
+    padding: 1rem;
+    background-color: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .user-details-header {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+    border-bottom: 1px solid #E5E7EB;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .edit-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    color: #DC2626;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  /* Bill Summary Card */
+  .bill-summary-card {
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #F3F4F6;
+  }
+  .bill-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    color: #4B5563;
+  }
+  .bill-summary-row span:last-child {
+    font-weight: 600;
+  }
+  .bill-summary-total {
+    padding-top: 0.5rem;
+    border-top: 1px solid #E5E7EB;
+    margin-top: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #DC2626;
+  }
+
+  /* Swipe To Order Feature */
+  .swipe-to-order-footer {
+    padding: 1.25rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 15;
+    background-color: white;
+  }
+  .swipe-button-base {
+    position: relative;
+    height: 3.5rem;
+    background-color: #DC2626;
+    color: white;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 8px 10px rgba(220, 38, 38, 0.4);
+    touch-action: pan-y; /* Important for preventing browser swipe gestures */
+  }
+  .swipe-handle {
+    height: 100%;
+    width: 3.5rem;
+    background-color: white;
+    color: #DC2626;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    z-index: 10;
+    font-size: 1.5rem;
+    font-weight: 800;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    cursor: grab;
+  }
+  .swipe-text {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+    z-index: 5;
+    transition: opacity 300ms;
+  }
+
+  /* Thank You Screen */
+  .thank-you-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #DC2626;
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  .check-mark-bg {
+    width: 8rem;
+    height: 8rem;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
   .check-mark-svg {
     stroke-dasharray: 200;
     stroke-dashoffset: 200;
     animation: drawCheck 0.6s ease-out forwards;
     animation-delay: 0.1s;
+    stroke: #DC2626;
+    stroke-width: 4;
+    fill: none;
   }
   @keyframes drawCheck {
     100% {
@@ -939,9 +1446,67 @@ const customStyles = `
     }
   }
 
-  /* Custom Swipe Button Styling */
-  .swipe-to-order-button {
-    touch-action: pan-y; /* Allows vertical scrolling but captures horizontal touch */
+  /* Modal/Instructions */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+  }
+  .modal-content {
+    background-color: white;
+    width: 100%;
+    max-width: 512px;
+    margin: 0 auto;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.2);
+    animation: slide-in-up 0.3s ease-out;
+  }
+  @keyframes slide-in-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .modal-textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.75rem;
+    transition: border-color 150ms;
+    resize: none;
+  }
+  .modal-buttons {
+    display: flex;
+    margin-top: 1.5rem;
+    gap: 0.75rem;
+  }
+  .modal-button-default {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: #E5E7EB;
+    color: #4B5563;
+    font-weight: 700;
+    border-radius: 9999px;
+    transition: background-color 150ms;
+  }
+  .modal-button-primary {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: #DC2626;
+    color: white;
+    font-weight: 700;
+    border-radius: 9999px;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.4);
+    transition: background-color 150ms;
   }
 `;
 
@@ -1047,9 +1612,17 @@ export default function App() {
   const BackButton = ({ onClick }) => (
     <button
       onClick={onClick}
-      className="p-1 text-gray-800 hover:text-red-600 transition-colors"
+      className="back-button"
+      style={{
+        padding: '0.25rem',
+        color: '#1F2937', // gray-800
+        transition: 'color 150ms',
+        backgroundColor: 'transparent',
+        border: 'none',
+        cursor: 'pointer'
+      }}
     >
-      {/* Chevron Left Icon (Lucide equivalent) */}
+      {/* Chevron Left Icon */}
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="m15 18-6-6 6-6"/>
       </svg>
@@ -1067,14 +1640,14 @@ export default function App() {
     }, [countdown]);
 
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-red-600 text-white text-center p-6 min-h-screen">
-        <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-8 shadow-2xl">
-          <svg className="check-mark-svg w-16 h-16 stroke-red-600" viewBox="0 0 52 52">
+      <div className="thank-you-container">
+        <div className="check-mark-bg">
+          <svg className="check-mark-svg" width="64" height="64" viewBox="0 0 52 52">
             <polyline points="14,26 24,36 38,18" />
           </svg>
         </div>
-        <h1 className="text-3xl font-extrabold mb-2">Thanks For Ordering</h1>
-        <p className="text-xl font-light">Redirecting in {countdown}</p>
+        <h1 style={{fontSize: '1.875rem', fontWeight: '800', marginBottom: '0.5rem'}}>Thanks For Ordering</h1>
+        <p style={{fontSize: '1.25rem', fontWeight: '300'}}>Redirecting in {countdown}</p>
       </div>
     );
   };
@@ -1089,6 +1662,7 @@ export default function App() {
 
     const isFormValid = useMemo(() => {
       const { name, phone, address, members } = userData;
+      // Basic validation: Name must exist, Phone must be 10 digits
       const phoneValid = phone && phone.length === 10 && !isNaN(phone);
 
       if (!name || !phoneValid) return false;
@@ -1098,16 +1672,16 @@ export default function App() {
     }, [userData, isTakeAway]);
 
     return (
-      <div className="flex flex-col gap-5 p-5 bg-white rounded-t-2xl shadow-inner flex-grow">
-        <h2 className="text-xl font-bold text-center text-gray-800">Enter Your Details</h2>
-        
+      <div className="details-form-container">
+        <h2 className="details-form-title">Enter Your Details</h2>
+
         {/* Name Input */}
         <input
           name="name"
           placeholder="Full Name"
           value={userData.name}
           onChange={handleInputChange}
-          className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:ring-red-500 focus:border-red-500 transition duration-150"
+          className="form-input"
         />
 
         {/* Phone Input */}
@@ -1118,7 +1692,7 @@ export default function App() {
           onChange={handleInputChange}
           type="tel"
           maxLength="10"
-          className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:ring-red-500 focus:border-red-500 transition duration-150"
+          className="form-input"
         />
 
         {isTakeAway ? (
@@ -1129,7 +1703,7 @@ export default function App() {
             value={userData.address}
             onChange={handleInputChange}
             rows="3"
-            className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:ring-red-500 focus:border-red-500 transition duration-150 resize-none"
+            className="form-textarea"
           />
         ) : (
           /* Members Select for Dine In */
@@ -1137,7 +1711,7 @@ export default function App() {
             name="members"
             value={userData.members}
             onChange={handleInputChange}
-            className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:ring-red-500 focus:border-red-500 transition duration-150"
+            className="form-select"
           >
             <option value="">Number of Persons</option>
             {TABLE_SIZES.map(size => (
@@ -1149,13 +1723,11 @@ export default function App() {
         <button
           onClick={onNext}
           disabled={!isFormValid}
-          className={`w-full py-4 text-white font-bold rounded-full transition-all duration-200 shadow-lg ${
-            isFormValid ? 'bg-red-600 hover:bg-red-700 shadow-red-300' : 'bg-gray-400 cursor-not-allowed shadow-none'
-          }`}
+          className="form-submit-button"
         >
           {currentPage === 'details' ? 'Order Now' : 'Proceed to Order Summary'}
         </button>
-        {isTakeAway && <p className="text-center text-sm text-green-600 font-semibold">Avg. Delivery Time: 42 mins</p>}
+        {isTakeAway && <p style={{textAlign: 'center', fontSize: '0.875rem', color: '#059669', fontWeight: '600'}}>Avg. Delivery Time: 42 mins</p>}
       </div>
     );
   };
@@ -1166,13 +1738,13 @@ export default function App() {
     const taxes = 5.00; // Mock fixed tax
     const grandTotal = cartTotal + deliveryCharge + taxes;
 
-    // --- Component for Swipe to Order ---
+    // --- Component for Swipe to Order (Raw CSS/Inline Style) ---
     const SwipeToOrderButton = () => {
       const [isSwiping, setIsSwiping] = useState(false);
       const [startX, setStartX] = useState(0);
       const [currentX, setCurrentX] = useState(0);
       const threshold = 150; // Distance to count as a 'swipe'
-      const maxSwipe = 250; 
+      const maxSwipe = 250;
 
       const handleStart = (clientX) => {
         setIsSwiping(true);
@@ -1198,7 +1770,7 @@ export default function App() {
       const handleTouchStart = (e) => handleStart(e.touches[0].clientX);
       const handleTouchMove = (e) => handleMove(e.touches[0].clientX);
       const handleTouchEnd = () => handleEnd();
-      
+
       const handleMouseDown = (e) => handleStart(e.clientX);
       const handleMouseMove = (e) => handleMove(e.clientX);
       const handleMouseUp = () => handleEnd();
@@ -1206,13 +1778,17 @@ export default function App() {
 
       const swipeStyle = {
         transform: `translateX(${currentX}px)`,
-        transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+        transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
+        cursor: isSwiping ? 'grabbing' : 'grab'
       };
+      
+      const textOpacity = currentX > 50 ? 0.3 : 1;
+      const textTransition = isSwiping ? 'none' : 'opacity 0.3s';
 
       return (
-        <div className="p-5">
-          <div 
-            className="swipe-to-order-button bg-red-600 text-white h-14 rounded-full flex items-center relative overflow-hidden shadow-xl"
+        <div className="swipe-to-order-footer">
+          <div
+            className="swipe-button-base"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -1221,10 +1797,13 @@ export default function App() {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseLeave}
           >
-            <div className="swipe-handle h-full w-14 bg-white text-red-600 rounded-full flex items-center justify-center absolute left-0 z-10 shadow-md" style={swipeStyle}>
-              <span className="text-xl font-extrabold">{'>'}</span>
+            <div className="swipe-handle" style={swipeStyle}>
+              {'>'}
             </div>
-            <span className="flex-grow text-center font-bold text-lg z-0 transition-opacity duration-300" style={{ opacity: currentX > 50 ? 0.3 : 1 }}>
+            <span 
+                className="swipe-text" 
+                style={{ opacity: textOpacity, transition: textTransition }}
+            >
               Swipe to Order (₹{grandTotal.toFixed(2)})
             </span>
           </div>
@@ -1233,75 +1812,75 @@ export default function App() {
     };
 
     const UserDetailsDisplay = () => (
-      <div className="relative p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-inner">
-        <h3 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Your Details</h3>
-        <p className="text-sm font-semibold text-gray-700">{userData.name}, {userData.phone}</p>
+      <div className="user-details-display" style={{marginBottom: '1rem'}}>
+        <h3 className="user-details-header">Your Details</h3>
+        <p style={{fontSize: '0.875rem', fontWeight: '600', color: '#374151'}}>{userData.name}, {userData.phone}</p>
         {isTakeAway ? (
           <>
-            <p className="text-xs text-gray-500 mt-1 truncate">
+            <p style={{fontSize: '0.75rem', color: '#6B7280', marginTop: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
               Delivery at Home - {userData.address || 'Address not entered'}
             </p>
-            <p className="text-xs text-green-600 font-semibold mt-1">Delivery in 42 mins</p>
+            <p style={{fontSize: '0.75rem', color: '#059669', fontWeight: '600', marginTop: '0.25rem'}}>Delivery in 42 mins</p>
           </>
         ) : (
-          <p className="text-xs text-gray-500 mt-1">
+          <p style={{fontSize: '0.75rem', color: '#6B7280', marginTop: '0.25rem'}}>
             Dine In - Table for **{userData.members}** members
           </p>
         )}
-        <button className="absolute top-4 right-4 text-xs text-red-600 font-bold hover:underline" onClick={() => navigateTo('checkout')}>
+        <button className="edit-button" onClick={() => navigateTo('checkout')}>
           Edit Details
         </button>
       </div>
     );
 
     return (
-      <div className="flex flex-col h-full bg-white">
+      <div className="checkout-page-container">
         {/* Header */}
-        <div className="sticky top-0 bg-white z-20 border-b border-gray-100 px-4 pt-12 pb-4 flex items-center shadow-sm">
+        <div className="page-header">
           <BackButton onClick={() => navigateTo('home')} />
-          <h1 className="flex-grow text-center text-xl font-bold text-gray-800 -ml-8">Place your order here</h1>
+          <h1 className="page-title">Place your order here</h1>
         </div>
 
         {/* Mode Toggle */}
-        <div className="px-5 pt-4">
-          <div className="flex bg-gray-100 p-1 rounded-full shadow-inner">
+        <div className="mode-toggle-wrapper">
+          <div className="mode-toggle-group">
             <button
-              className={`flex-1 py-2 font-semibold rounded-full transition-colors ${!isTakeAway ? 'bg-white text-red-600 shadow-md' : 'text-gray-500 hover:text-red-500'}`}
+              className={`mode-toggle-button ${!isTakeAway ? 'active' : ''}`}
               onClick={() => setUserData(p => ({ ...p, mode: 'Dine In' }))}
             >
               Dine In
             </button>
             <button
-              className={`flex-1 py-2 font-semibold rounded-full transition-colors ${isTakeAway ? 'bg-white text-red-600 shadow-md' : 'text-gray-500 hover:text-red-500'}`}
+              className={`mode-toggle-button ${isTakeAway ? 'active' : ''}`}
               onClick={() => setUserData(p => ({ ...p, mode: 'Take Away' }))}
             >
               Take Away
             </button>
           </div>
         </div>
-        
+
         {/* Main Content Area */}
-        <div className="flex-grow overflow-y-auto pb-4">
+        <div style={{flexGrow: 1, overflowY: 'auto', padding: currentPage === 'details' ? '1.25rem' : '0'}}>
           {currentPage === 'checkout' && (
             <UserDetailsForm onNext={() => navigateTo('details')} />
           )}
-          
+
           {currentPage === 'details' && (
-            <div className="px-5 flex flex-col gap-4">
-              
+            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+
               {/* Cart List */}
-              <div className="mt-4 p-4 border border-gray-100 rounded-xl shadow-sm">
-                <h3 className="text-lg font-bold mb-3 text-gray-800">Order Items</h3>
+              <div className="order-list-card">
+                <h3 style={{fontSize: '1.125rem', fontWeight: '700', marginBottom: '0.75rem', color: '#1F2937'}}>Order Items</h3>
                 {cart.map(item => (
-                  <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-700">{item.name}</span>
-                      <span className="text-sm font-bold text-red-600">₹{(item.price * item.quantity).toFixed(2)}</span>
+                  <div key={item.id} className="order-item-row">
+                    <div style={{display: 'flex', flexDirection: 'column'}}>
+                      <span className="order-item-name">{item.name}</span>
+                      <span className="order-item-price">₹{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="w-6 h-6 bg-red-100 text-red-600 rounded-full font-bold text-sm hover:bg-red-200">-</button>
-                      <span className="w-5 text-center font-bold text-gray-800">{item.quantity}</span>
-                      <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="w-6 h-6 bg-red-600 text-white rounded-full font-bold text-sm hover:bg-red-700">+</button>
+                    <div className="quantity-controls" style={{boxShadow: 'none', backgroundColor: 'transparent', padding: 0}}>
+                      <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="quantity-button quantity-button-remove" style={{width: '1.5rem', height: '1.5rem', fontSize: '1rem'}}>-</button>
+                      <span className="quantity-display" style={{width: '1rem', color: '#374151'}}>{item.quantity}</span>
+                      <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="quantity-button quantity-button-add" style={{width: '1.5rem', height: '1.5rem', fontSize: '1rem'}}>+</button>
                     </div>
                   </div>
                 ))}
@@ -1309,7 +1888,7 @@ export default function App() {
 
               {/* Cooking Instructions Button */}
               <button
-                className="w-full p-4 text-center text-gray-600 font-semibold border-2 border-dashed border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                className="instructions-button"
                 onClick={() => navigateTo('cooking-instructions')}
               >
                 {cookingInstructions.length > 0 ? `Instructions Added (${cookingInstructions.length} chars)` : 'Add cooking instructions (optional)'}
@@ -1318,15 +1897,15 @@ export default function App() {
               <UserDetailsDisplay />
 
               {/* Bill Summary */}
-              <div className="p-4 bg-white rounded-xl shadow-lg border border-gray-100">
-                <h3 className="text-lg font-bold mb-3 text-gray-800">Bill Summary</h3>
-                <div className="space-y-2 text-gray-600">
-                  <div className="flex justify-between"><span>Item Total</span><span className="font-semibold">₹{cartTotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span>Delivery Charge</span><span className="font-semibold">{isTakeAway ? `₹${deliveryCharge.toFixed(2)}` : 'N/A'}</span></div>
-                  <div className="flex justify-between"><span>Taxes (5.00%)</span><span className="font-semibold">₹{taxes.toFixed(2)}</span></div>
-                  <div className="flex justify-between pt-2 border-t border-gray-200 text-lg font-extrabold text-red-600">
+              <div className="bill-summary-card">
+                <h3 style={{fontSize: '1.125rem', fontWeight: '700', marginBottom: '0.75rem', color: '#1F2937'}}>Bill Summary</h3>
+                <div style={{color: '#4B5563'}}>
+                  <div className="bill-summary-row"><span>Item Total</span><span>₹{cartTotal.toFixed(2)}</span></div>
+                  <div className="bill-summary-row"><span>Delivery Charge</span><span>{isTakeAway ? `₹${deliveryCharge.toFixed(2)}` : 'N/A'}</span></div>
+                  <div className="bill-summary-row"><span>Taxes (5.00%)</span><span>₹{taxes.toFixed(2)}</span></div>
+                  <div className="bill-summary-total">
                     <span>Grand Total</span>
-                    <span>₹{grandTotal.toFixed(2)}</span>
+                    <span style={{float: 'right'}}>₹{grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -1334,7 +1913,7 @@ export default function App() {
           )}
 
         </div>
-        
+
         {/* Fixed Swipe Footer - Only on Details/Order Summary Screen */}
         {currentPage === 'details' && (
            <SwipeToOrderButton />
@@ -1344,16 +1923,16 @@ export default function App() {
   };
 
   const CookingInstructionsModal = () => (
-    <div className="fixed inset-0 bg-black/50 z-[100] flex items-end" onClick={() => navigateTo('details')}>
-      <div className="bg-white w-full max-w-lg mx-auto rounded-t-3xl p-6 shadow-2xl animate-slide-in-up" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Add Cooking Instructions</h2>
-          <button onClick={() => navigateTo('details')} className="text-gray-500 hover:text-gray-800 transition-colors text-xl">
-            {/* Close Icon (Lucide equivalent) */}
+    <div className="modal-overlay" onClick={() => navigateTo('details')}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#1F2937'}}>Add Cooking Instructions</h2>
+          <button onClick={() => navigateTo('details')} style={{color: '#6B7280', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.25rem'}}>
+            {/* Close Icon */}
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
+        <p style={{fontSize: '0.875rem', color: '#6B7280', marginBottom: '1rem'}}>
           The restaurant will try its best to follow your request. However, refunds or cancellations in this regard won't be possible.
         </p>
         <textarea
@@ -1361,27 +1940,17 @@ export default function App() {
           value={cookingInstructions}
           onChange={(e) => setCookingInstructions(e.target.value)}
           rows="5"
-          className="w-full p-4 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 resize-none"
+          className="modal-textarea"
         />
-        <div className="flex justify-between mt-6 gap-3">
-          <button onClick={() => { setCookingInstructions(''); navigateTo('details'); }} className="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-full hover:bg-gray-300 transition-colors">
+        <div className="modal-buttons">
+          <button onClick={() => { setCookingInstructions(''); navigateTo('details'); }} className="modal-button-default">
             Clear & Back
           </button>
-          <button onClick={() => navigateTo('details')} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 shadow-md shadow-red-300 transition-colors">
+          <button onClick={() => navigateTo('details')} className="modal-button-primary">
             Save & Next
           </button>
         </div>
       </div>
-      {/* Custom keyframe for modal to slide up */}
-      <style>{`
-        @keyframes slide-in-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-        .animate-slide-in-up {
-          animation: slide-in-up 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 
@@ -1394,106 +1963,101 @@ export default function App() {
         : mockMenu.filter(item => item.category === selectedCategory);
 
       if (!searchTerm) return itemsByCategory;
-      
+
       // Search applies to the selected category only
-      return itemsByCategory.filter(item => 
+      return itemsByCategory.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }, [selectedCategory, searchTerm]);
 
     const handleCategorySelect = (category) => {
       setSelectedCategory(category);
-      setSearchTerm(''); 
+      setSearchTerm('');
     };
-    
+
     // Renders the list of menu items
     const MenuList = () => (
-        <main className="px-5 pt-3 space-y-4">
-            <h2 className="text-xl font-bold text-gray-800">{selectedCategory}</h2>
+        <main className="menu-item-list">
+            <h2 style={{fontSize: '1.25rem', fontWeight: '700', color: '#1F2937'}}>{selectedCategory}</h2>
             {filteredItems.map(item => {
                 const cartItem = cart.find(i => i.id === item.id);
                 return (
-                    <div key={item.id} className="flex items-center p-3 bg-white rounded-xl shadow-md border border-gray-100">
+                    <div key={item.id} className="menu-item-card">
                         {/* Image/Placeholder */}
-                        <div className="w-16 h-16 rounded-lg bg-gray-200 flex-shrink-0 mr-4 overflow-hidden">
-                            <img 
-                                src={item.imageUrl} 
-                                alt={item.name} 
-                                className="w-full h-full object-cover" 
+                        <div className="item-image">
+                            <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                style={{width: '100%', height: '100%', objectFit: 'cover'}}
                                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/64x64/f0f0f0/333333?text=Dish"; }}
                             />
                         </div>
-                        
+
                         {/* Details */}
-                        <div className="flex-grow">
-                            <div className="font-semibold text-gray-800">{item.name}</div>
-                            <div className="text-lg font-extrabold text-red-600">₹{item.price}</div>
+                        <div className="item-details">
+                            <div className="item-name">{item.name}</div>
+                            <div className="item-price">₹{item.price}</div>
                         </div>
 
                         {/* Quantity Control or Add Button */}
                         {cartItem ? (
-                            <div className="flex items-center space-x-1 bg-gray-100 rounded-full p-1 shadow-inner">
-                                <button 
-                                    onClick={() => updateCartQuantity(item.id, cartItem.quantity - 1)} 
-                                    className="w-8 h-8 bg-red-600 text-white rounded-full font-bold text-lg hover:bg-red-700"
+                            <div className="quantity-controls">
+                                <button
+                                    onClick={() => updateCartQuantity(item.id, cartItem.quantity - 1)}
+                                    className="quantity-button quantity-button-remove"
                                 >
                                     -
                                 </button>
-                                <span className="w-6 text-center font-bold text-gray-800">{cartItem.quantity}</span>
-                                <button 
-                                    onClick={() => updateCartQuantity(item.id, cartItem.quantity + 1)} 
-                                    className="w-8 h-8 bg-red-600 text-white rounded-full font-bold text-lg hover:bg-red-700"
+                                <span className="quantity-display">{cartItem.quantity}</span>
+                                <button
+                                    onClick={() => updateCartQuantity(item.id, cartItem.quantity + 1)}
+                                    className="quantity-button quantity-button-add"
                                 >
                                     +
                                 </button>
                             </div>
                         ) : (
-                            <button className="w-10 h-10 bg-red-600 text-white rounded-full font-bold text-xl hover:bg-red-700 shadow-md shadow-red-300" onClick={() => addItemToCart(item)}>
+                            <button className="add-button-plus" onClick={() => addItemToCart(item)}>
                                 +
                             </button>
                         )}
                     </div>
                 );
             })}
-            {filteredItems.length === 0 && <p className="text-center text-gray-500 py-10">No items found.</p>}
+            {filteredItems.length === 0 && <p style={{textAlign: 'center', color: '#6B7280', padding: '2.5rem 0'}}>No items found.</p>}
         </main>
     );
 
     return (
-      <div className="flex flex-col h-full bg-white pb-20">
-        
+      <div style={{display: 'flex', flexDirection: 'column', flexGrow: 1}}>
         {/* Header and Search (Sticky) */}
-        <div className="sticky top-0 bg-white z-10 px-5 pt-12 pb-4 shadow-sm">
-          <header className="mb-4">
-            <div className="text-xl font-medium text-gray-500">Good evening</div>
-            <div className="text-3xl font-extrabold text-gray-800">Place your order here</div>
+        <div className="header-sticky">
+          <header style={{marginBottom: '1rem'}}>
+            <div style={{fontSize: '1.25rem', fontWeight: '500', color: '#6B7280'}}>Good evening</div>
+            <div style={{fontSize: '1.875rem', fontWeight: '800', color: '#1F2937'}}>Place your order here</div>
           </header>
 
-          <div className="relative mb-5">
+          <div className="search-wrapper">
             <input
               type="text"
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full py-3 pl-12 pr-4 text-gray-700 bg-gray-100 border border-gray-200 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none shadow-inner transition duration-150"
+              className="search-input"
             />
             {/* Search Icon */}
-            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <span className="search-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </span>
           </div>
 
           {/* Categories Nav */}
-          <nav className="flex overflow-x-scroll scrollbar-hide">
-            <div className="flex space-x-3 pb-2">
+          <nav className="category-nav scrollbar-hide">
+            <div className="category-list">
                 {categories.map(category => (
                 <button
                     key={category}
-                    className={`px-5 py-2 rounded-full text-base font-semibold transition-all duration-200 shadow-md flex-shrink-0 ${
-                    selectedCategory === category
-                        ? 'bg-red-600 text-white shadow-red-300'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                    }`}
+                    className={`category-button ${selectedCategory === category ? 'category-button-active' : 'category-button-default'}`}
                     onClick={() => handleCategorySelect(category)}
                 >
                     {category}
@@ -1502,21 +2066,21 @@ export default function App() {
             </div>
           </nav>
         </div>
-        
+
         {/* Menu Items List */}
-        <div className="flex-grow overflow-y-auto">
+        <div style={{flexGrow: 1, overflowY: 'auto'}}>
             <MenuList />
         </div>
 
         {/* Fixed Checkout Bar */}
         {cart.length > 0 && (
-          <footer className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-sm shadow-2xl border-t border-gray-100 max-w-lg mx-auto z-20">
-            <div className="flex justify-between items-center bg-red-600 p-4 rounded-xl shadow-lg shadow-red-300 text-white cursor-pointer hover:bg-red-700 transition-colors" onClick={() => navigateTo('checkout')}>
-              <div className="text-base font-medium">
-                {cart.length} item(s) | <span className="font-extrabold">₹{cartTotal.toFixed(2)}</span>
+          <footer className="footer-checkout">
+            <div className="checkout-button-bar" onClick={() => navigateTo('checkout')}>
+              <div className="checkout-summary-text">
+                {cart.length} item(s) | <span style={{fontWeight: '800'}}>₹{cartTotal.toFixed(2)}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-extrabold">Next</span>
+              <div className="checkout-next-text">
+                <span>Next</span>
                 {/* Arrow Right Icon */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </div>
@@ -1531,10 +2095,10 @@ export default function App() {
     // Show NoCartScreen if trying to access checkout/details with an empty cart
     if ((currentPage === 'checkout' || currentPage === 'details') && cart.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-6 min-h-screen">
-          <h1 className="text-2xl font-bold mb-4 text-gray-800">Your Cart is Empty</h1>
-          <p className="text-gray-500 mb-6">Please add some delicious items to place an order.</p>
-          <button onClick={() => navigateTo('home')} className="py-3 px-6 bg-red-600 text-white font-bold rounded-full shadow-lg hover:bg-red-700">
+        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center', padding: '1.5rem'}}>
+          <h1 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem', color: '#1F2937'}}>Your Cart is Empty</h1>
+          <p style={{color: '#6B7280', marginBottom: '1.5rem'}}>Please add some delicious items to place an order.</p>
+          <button onClick={() => navigateTo('home')} className="form-submit-button" style={{maxWidth: '15rem'}}>
             Go Back to Menu
           </button>
         </div>
@@ -1551,7 +2115,7 @@ export default function App() {
         return (
           // Render CheckoutScreen first, then the modal overlay on top
           <>
-            <CheckoutScreen /> 
+            <CheckoutScreen />
             <CookingInstructionsModal />
           </>
         );
@@ -1563,8 +2127,8 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-lg mx-auto min-h-screen shadow-2xl bg-white relative">
-      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+    <div className="app-container">
+      <style>{rawCssStyles}</style>
       {renderContent()}
     </div>
   );
