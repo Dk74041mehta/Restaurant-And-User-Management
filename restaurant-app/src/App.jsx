@@ -605,7 +605,7 @@ const OrdersSummary = ({ orders, setOrders }) => {
                 )}
             </div>
 
-            {/* Section for Completed Orders (Optional, for reference) */}
+            {/* Section for Completed Order */}
             {completedOrders.length > 0 && (
                 <div className="mt-8 pt-6 border-t-gray">
                     <h3 className="text-xl font-semibold-gray-700 mb-4">Completed Orders ({completedOrders.length})</h3>
@@ -1475,7 +1475,6 @@ const App = () => {
             {/* Left Sidebar Navigation */}
             <nav className="sidebar shadow-xl space-y-4">
                 <div className="text-2xl font-bold text-indigo-600 mb-6 p-2">
-                    Restaurant POS
                 </div>
                 {navItems.map(item => <NavItem key={item.id} {...item} />)}
             </nav>
