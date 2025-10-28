@@ -1,17 +1,18 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Utensils, Plus } from "lucide-react";
 
-const Header = () => {
-  return (
-    <header className="header">
-      <h1> Restaurant App</h1>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/checkout">Checkout</Link>
-        <Link to="/thankyou">Thank You</Link>
-      </nav>
-    </header>
-  );
-};
+const Header = ({ onAddTable }) => (
+  <header className="header">
+    <div className="header-left">
+      <Utensils size={28} />
+      <h2>Restaurant Dashboard</h2>
+    </div>
+    {onAddTable && (
+      <button className="add-btn" onClick={onAddTable}>
+        <Plus size={18} /> Add Table
+      </button>
+    )}
+  </header>
+);
 
 export default Header;
