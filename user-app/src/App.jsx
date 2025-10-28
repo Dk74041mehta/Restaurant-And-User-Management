@@ -318,7 +318,6 @@ const rawCssStyles = `
     color: #1F2937;
   }
   .form-input, .form-textarea, .form-select {
-    /* FIX: Ensure proper box model and width */
     width: 100%;
     min-width: 0; 
     box-sizing: border-box; 
