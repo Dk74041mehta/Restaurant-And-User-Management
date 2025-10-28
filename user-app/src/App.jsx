@@ -1,914 +1,3 @@
-// import React, { useState, useEffect, useCallback } from 'react';
-// import { Search, Plus, Minus, ArrowLeft, X, ChevronRight, CheckCircle } from 'lucide-react'; 
-
-// const MOCK_CATEGORIES = ['Pizza', 'Burger', 'Drink', 'French fries', 'Veggies', 'Desserts', 'Salads', 'Soups'];
-// const MOCK_ITEMS = [
-//   { id: 1, name: 'Capricciosa', price: 200, category: 'Pizza' },
-//   { id: 2, name: 'Sicilian', price: 150, category: 'Pizza' },
-//   { id: 3, name: 'Marinara', price: 90, category: 'Pizza' },
-//   { id: 4, name: 'Pepperoni', price: 300, category: 'Pizza' },
-//   { id: 5, name: 'Classic Beef Burger', price: 250, category: 'Burger' },
-//   { id: 6, name: 'Crispy Fries', price: 120, category: 'French fries' },
-//   { id: 7, name: 'Chicken Tenders', price: 280, category: 'Burger' },
-//   { id: 8, name: 'Coke (Small)', price: 60, category: 'Drink' },
-//   // Adding more items for infinite scroll simulation
-//   { id: 9, name: 'Vegetable Pizza', price: 220, category: 'Pizza' },
-//   { id: 10, name: 'Jalapeno Burger', price: 270, category: 'Burger' },
-//   { id: 11, name: 'Cheesy Garlic Bread', price: 180, category: 'Veggies' },
-//   { id: 12, name: 'Mineral Water', price: 40, category: 'Drink' },
-// ];
-
-
-// // MenuItem Component
-// const MenuItem = ({ item, count, onAdd, onRemove }) => (
-//   <div className="menuItem">
-//     <div className="itemImagePlaceholder"></div>
-    
-//     <div className="itemInfo">
-//       <h3 className="itemName">{item.name}</h3>
-//       <p className="itemPrice">₹{item.price.toFixed(2)}</p>
-//     </div>
-
-//     <div className="actionButtonContainer">
-//       {count > 0 ? (
-//         <div className="counter">
-//           <button onClick={() => onRemove(item.id)} className="counterButton"><Minus size={16} /></button>
-//           <span className="count">{count}</span>
-//           <button onClick={() => onAdd(item.id)} className="counterButton"><Plus size={16} /></button>
-//         </div>
-//       ) : (
-//         <button onClick={() => onAdd(item.id)} className="addButton">
-//           <Plus size={16} />
-//         </button>
-//       )}
-//     </div>
-//   </div>
-// );
-
-// // CategoryBar Component
-// const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => (
-//   <div className="categoryBarContainer">
-//     <div className="categoryList">
-//       {categories.map((category) => (
-//         <button
-//           key={category}
-//           className={`categoryButton ${selectedCategory === category ? 'selected' : ''}`}
-//           onClick={() => onSelectCategory(category)}
-//         >
-//           {category}
-//         </button>
-//       ))}
-//     </div>
-//   </div>
-// );
-
-// // Header Component
-// const Header = ({ searchTerm, setSearchTerm, currentPage }) => {
-//     // Search is only on the Home page
-//     if (currentPage !== 'home') return null;
-
-//     return (
-//       <div className="header">
-//         <p className="greeting">Good evening</p>
-//         <h1 className="title">Place your order here</h1>
-        
-//         <div className="searchBar">
-//           <Search size={20} className="searchIcon" />
-//           <input
-//             type="text"
-//             placeholder="Search"
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//             className="searchInput"
-//           />
-//         </div>
-//       </div>
-//     );
-// };
-
-// // HomePage Component
-// const HomePage = ({ cart, selectedCategory, setSelectedCategory, searchTerm, setSearchTerm, handleAddToCart, handleRemoveFromCart, navigateTo }) => {
-//   const filteredItems = MOCK_ITEMS
-//     .filter(item => selectedCategory === 'Pizza' ? true : item.category === selectedCategory) 
-//     .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
-
-//   const totalItemsInCart = Object.values(cart).reduce((sum, count) => sum + count, 0);
-
-//   return (
-//     <div className="homeContainer">
-//       <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} currentPage="home" />
-
-//       <CategoryBar
-//         categories={MOCK_CATEGORIES}
-//         selectedCategory={selectedCategory}
-//         onSelectCategory={setSelectedCategory}
-//       />
-      
-//       <div className="menuList">
-//         <p className="categoryTitle">{selectedCategory}</p>
-//         {filteredItems.map(item => (
-//           <MenuItem
-//             key={item.id}
-//             item={item}
-//             count={cart[item.id] || 0}
-//             onAdd={handleAddToCart}
-//             onRemove={handleRemoveFromCart}
-//           />
-//         ))}
-//         <div className="infiniteLoader">Loading more items...</div> 
-//       </div>
-
-//       {totalItemsInCart > 0 && (
-//         <button 
-//           className="nextButton"
-//           onClick={() => navigateTo('checkout')} 
-//         >
-//           Next ({totalItemsInCart} items)
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-
-// // InstructionsModal Component (Helper for CheckoutPage)
-// const InstructionsModal = ({ cookingInstructions, setCookingInstructions, setIsAddingInstructions }) => (
-//     <div className="instructionsModalOverlay">
-//       <div className="instructionsModal">
-//         <div className="modalHeader">
-//           <button className="modalClose" onClick={() => setIsAddingInstructions(false)}><X size={24} /></button>
-//           <h3 className="modalTitle">Add Cooking instructions</h3>
-//           <button className="modalNext" onClick={() => setIsAddingInstructions(false)}>Next</button>
-//         </div>
-//         <textarea
-//           className="instructionsTextarea"
-//           placeholder="Enter instructions here..."
-//           value={cookingInstructions}
-//           onChange={(e) => setCookingInstructions(e.target.value)}
-//         />
-//         <p className="instructionWarning">
-//           The restaurant will try its best to follow your request. However, refunds or cancellations in this regard won't be possible.
-//         </p>
-//       </div>
-//     </div>
-// );
-
-// // CheckoutPage Component
-// const CheckoutPage = ({ cart, navigateTo }) => {
-//     const [orderType, setOrderType] = useState('takeaway'); // SRD: Default can be either, setting to takeaway
-//     const [cookingInstructions, setCookingInstructions] = useState('');
-//     const [isAddingInstructions, setIsAddingInstructions] = useState(false);
-//     const [formData, setFormData] = useState({ 
-//         name: 'Divya Sigatapu', 
-//         phone: '9109109109', 
-//         address: 'Flat no: 301, SVR Enclave, Hyper Nagar, vasavi...', 
-//         members: 2 // For Dine In, available sizes: 2, 4, 6, 8
-//     });
-
-//     // Calculate Order Summary
-//     const itemTotal = Object.entries(cart).reduce((total, [itemId, count]) => {
-//         const item = MOCK_ITEMS.find(i => i.id == itemId);
-//         return total + (item ? item.price * count : 0);
-//     }, 0);
-    
-//     const deliveryCharge = orderType === 'takeaway' ? 50 : 0; 
-//     const taxes = 5.00; 
-//     const grandTotal = itemTotal + deliveryCharge + taxes;
-
-//     const handleSwipeToOrder = () => {
-//         console.log("Order Placed:", { formData, cart, orderType, cookingInstructions, grandTotal });
-//         navigateTo('thankyou');
-//     };
-
-//     const handleChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData(prev => ({ ...prev, [name]: value }));
-//     };
-
-//     const renderOrderSummary = () => (
-//         <div className="orderSummary">
-//             <h3 className="summaryTitle">Order Summary</h3>
-//             <div className="summaryLine">
-//                 <span>Item Total</span>
-//                 <span>₹{itemTotal.toFixed(2)}</span>
-//             </div>
-//             <div className="summaryLine">
-//                 <span>Delivery Charge</span>
-//                 <span>₹{deliveryCharge.toFixed(2)}</span>
-//             </div>
-//             <div className="summaryLine">
-//                 <span>Taxes</span>
-//                 <span>₹{taxes.toFixed(2)}</span>
-//             </div>
-//             <div className={`summaryLine grandTotal`}>
-//                 <span>Grand Total</span>
-//                 <span>₹{grandTotal.toFixed(2)}</span>
-//             </div>
-//         </div>
-//     );
-
-//     const renderDetailsForm = () => {
-//         if (orderType === 'dinein') {
-//             return (
-//                 <div className="detailsForm">
-//                     <h3 className="summaryTitle">Enter Your Details (Dine In)</h3>
-//                     <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="inputField" required />
-//                     <input type="tel" name="phone" placeholder="Contact Phone" value={formData.phone} onChange={handleChange} className="inputField" required />
-//                     <select name="members" value={formData.members} onChange={handleChange} className="inputField" required>
-//                         <option value="" disabled>Number of Persons</option>
-//                         {[2, 4, 6, 8].map(size => ( // SRD available sizes: 2, 4, 6, 8
-//                             <option key={size} value={size}>{size} Persons</option>
-//                         ))}
-//                     </select>
-//                 </div>
-//             );
-//         }
-//         // Takeaway Form
-//         return (
-//             <div className="detailsForm">
-//                 <h3 className="summaryTitle">Enter Your Details (Take Away)</h3>
-//                 <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} className="inputField" required />
-//                 <input type="tel" name="phone" placeholder="Contact Phone" value={formData.phone} onChange={handleChange} className="inputField" required />
-//                 <input type="text" name="address" placeholder="Complete Address" value={formData.address} onChange={handleChange} className="inputField" required />
-//                 <p className="deliveryTime">Delivery in 42 mins</p>
-//             </div>
-//         );
-//     };
-
-//     return (
-//         <div className="checkoutContainer">
-//             <button className="backButton" onClick={() => navigateTo('home')}>
-//                 <ArrowLeft size={24} />
-//             </button>
-//             <h2 className="checkoutTitle">Checkout</h2>
-
-//             {/* Order Type Switch */}
-//             <div className="orderTypeToggle">
-//                 <button 
-//                 className={`toggleButton ${orderType === 'dinein' ? 'toggleSelected' : ''}`}
-//                 onClick={() => setOrderType('dinein')}
-//                 >
-//                 Dine In
-//                 </button>
-//                 <button 
-//                 className={`toggleButton ${orderType === 'takeaway' ? 'toggleSelected' : ''}`}
-//                 onClick={() => setOrderType('takeaway')}
-//                 >
-//                 Take Away
-//                 </button>
-//             </div>
-
-//             {/* Cooking Instructions Box */}
-//             <div className="instructionsBox" onClick={() => setIsAddingInstructions(true)}>
-//                 <span className={cookingInstructions ? 'instructionTextFilled' : 'instructionTextPlaceholder'}>
-//                     {cookingInstructions || "Add cooking instructions (optional)"}
-//                 </span>
-//                 <ChevronRight size={20} />
-//             </div>
-
-//             {/* Cart Items Summary */}
-//             <div className="cartItemsSummary">
-//                 <h3 className="summaryTitle">Your Items</h3>
-//                 {Object.entries(cart).map(([itemId, count]) => {
-//                 const item = MOCK_ITEMS.find(i => i.id == itemId);
-//                 return item && (
-//                     <div key={itemId} className="cartItemLine">
-//                     <span>{count} x {item.name}</span>
-//                     <span>₹{(item.price * count).toFixed(2)}</span>
-//                     </div>
-//                 );
-//                 })}
-//             </div>
-
-//             {renderDetailsForm()}
-//             {renderOrderSummary()}
-
-//             <div className="swipeToOrderBar" onClick={handleSwipeToOrder}>
-//                 <span>Swipe to Order</span>
-//                 <div className="swipeHandle">
-//                     <ChevronRight size={20} color="#333" />
-//                 </div>
-//             </div>
-            
-//             {isAddingInstructions && (
-//                 <InstructionsModal 
-//                     cookingInstructions={cookingInstructions} 
-//                     setCookingInstructions={setCookingInstructions}
-//                     setIsAddingInstructions={setIsAddingInstructions}
-//                 />
-//             )}
-//         </div>
-//     );
-// };
-
-// // ThankYouPage Component
-// const ThankYouPage = ({ navigateTo, resetCart }) => {
-//     const [redirectCount, setRedirectCount] = useState(3);
-
-//     useEffect(() => {
-//         if (redirectCount > 0) {
-//             const timer = setTimeout(() => setRedirectCount(prev => prev - 1), 1000);
-//             return () => clearTimeout(timer);
-//         } else {
-//             resetCart(); // Reset cart state
-//             navigateTo('home'); // SRD: Redirect to / after 2 seconds (3 to 0 countdown)
-//         }
-//     }, [redirectCount, navigateTo, resetCart]);
-
-//     return (
-//         <div className="thankYouContainer">
-//             <CheckCircle size={64} className="thankYouIcon" />
-//             <h1 className="thankYouTitle">Thanks For Ordering</h1>
-//             <p className="redirectText">Redirecting in {redirectCount}</p>
-//         </div>
-//     );
-// };
-
-
-// // Main App Component
-// const App = () => {
-//     const [currentPage, setCurrentPage] = useState('home'); 
-//     const [cart, setCart] = useState({ 1: 1, 4: 2 }); // Initial items for quick checkout testing
-//     const [selectedCategory, setSelectedCategory] = useState('Pizza');
-//     const [searchTerm, setSearchTerm] = useState('');
-
-//     const navigateTo = (page) => setCurrentPage(page);
-
-//     // Cart Handlers
-//     const handleAddToCart = useCallback((itemId) => {
-//       setCart(prevCart => ({ ...prevCart, [itemId]: (prevCart[itemId] || 0) + 1 }));
-//     }, []);
-
-//     const handleRemoveFromCart = useCallback((itemId) => {
-//       setCart(prevCart => {
-//         const newCount = (prevCart[itemId] || 0) - 1;
-//         if (newCount <= 0) {
-//           // Remove item entirely if count is zero or less
-//           const { [itemId]: removed, ...rest } = prevCart;
-//           return rest;
-//         }
-//         return { ...prevCart, [itemId]: newCount };
-//       });
-//     }, []);
-    
-//     const resetCart = useCallback(() => {
-//       setCart({});
-//     }, []);
-
-//     // Main Router Logic ---
-//     let pageContent;
-
-//     if (currentPage === 'checkout') {
-//         // Only proceed if cart is not empty
-//         if (Object.keys(cart).length === 0) {
-//             pageContent = (
-//                 <HomePage 
-//                     cart={cart}
-//                     selectedCategory={selectedCategory}
-//                     setSelectedCategory={setSelectedCategory}
-//                     searchTerm={searchTerm}
-//                     setSearchTerm={setSearchTerm}
-//                     handleAddToCart={handleAddToCart}
-//                     handleRemoveFromCart={handleRemoveFromCart}
-//                     navigateTo={navigateTo}
-//                 />
-//             );
-//         } else {
-//             pageContent = <CheckoutPage cart={cart} navigateTo={navigateTo} />;
-//         }
-//     } else if (currentPage === 'thankyou') {
-//         pageContent = <ThankYouPage navigateTo={navigateTo} resetCart={resetCart} />;
-//     } else {
-//         // Default is Home Page
-//         pageContent = (
-//             <HomePage 
-//                 cart={cart}
-//                 selectedCategory={selectedCategory}
-//                 setSelectedCategory={setSelectedCategory}
-//                 searchTerm={searchTerm}
-//                 setSearchTerm={setSearchTerm}
-//                 handleAddToCart={handleAddToCart}
-//                 handleRemoveFromCart={handleRemoveFromCart}
-//                 navigateTo={navigateTo}
-//             />
-//         );
-//     }
-
-//     // Always render the styles and the current page content
-//     return (
-//         <>
-//             <style>{CSS_STYLES}</style>
-//             {pageContent}
-//         </>
-//     );
-// };
-
-// // 9. CSS Styles 
-// const CSS_STYLES = `
-// /* Global Reset and Base Styles */
-// body {
-//     font-family: 'Inter', sans-serif;
-//     margin: 0;
-//     padding: 0;
-//     background-color: #f7f7f7;
-// }
-
-// /* --- Global Layout / Container Styles --- */
-// /* The main container limits the app to a typical mobile width */
-// .homeContainer, .checkoutContainer, .thankYouContainer {
-//     padding: 20px;
-//     background-color: #f7f7f7; 
-//     min-height: 100vh;
-//     display: flex;
-//     flex-direction: column;
-//     max-width: 450px; 
-//     margin: 0 auto;
-//     position: relative; /* For fixed elements */
-// }
-// .thankYouContainer {
-//     /* Override for thank you page to center content */
-//     justify-content: center;
-//     align-items: center;
-//     background-color: white;
-// }
-
-
-// /* --- Header Styles --- */
-// .header {
-//     margin-bottom: 20px;
-// }
-
-// .greeting {
-//     font-size: 16px;
-//     color: #888;
-//     font-weight: 500;
-//     margin-bottom: 4px;
-// }
-
-// .title {
-//     font-size: 24px;
-//     font-weight: 700;
-//     color: #333;
-//     margin-bottom: 15px;
-// }
-
-// .searchBar {
-//     display: flex;
-//     align-items: center;
-//     padding: 10px 15px;
-//     background-color: white;
-//     border-radius: 12px;
-//     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-// }
-
-// .searchIcon {
-//     color: #888;
-//     margin-right: 10px;
-// }
-
-// .searchInput {
-//     flex-grow: 1;
-//     border: none;
-//     outline: none;
-//     font-size: 16px;
-//     padding: 0;
-//     background-color: transparent;
-// }
-
-// /* --- CategoryBar Styles --- */
-// .categoryBarContainer {
-//     overflow-x: auto; 
-//     white-space: nowrap;
-//     margin: 5px 0 20px 0;
-//     /* Hide scrollbar */
-//     -ms-overflow-style: none;
-//     scrollbar-width: none;
-// }
-
-// .categoryBarContainer::-webkit-scrollbar {
-//     display: none;
-// }
-
-// .categoryList {
-//     display: flex;
-//     gap: 10px;
-//     padding: 5px 0;
-// }
-
-// .categoryButton {
-//     background-color: white;
-//     color: #666;
-//     border: 1px solid #ddd;
-//     padding: 8px 15px;
-//     border-radius: 20px;
-//     font-size: 14px;
-//     cursor: pointer;
-//     flex-shrink: 0;
-//     transition: all 0.2s ease;
-// }
-
-// .categoryButton.selected {
-//     background-color: #333; /* Selected pill style */
-//     color: white;
-//     border-color: #333;
-//     font-weight: 600;
-// }
-
-// /* --- Menu List & Item Styles --- */
-// .menuList {
-//     flex-grow: 1;
-//     overflow-y: auto;
-//     padding-bottom: 100px; 
-// }
-
-// .categoryTitle {
-//     font-size: 20px;
-//     font-weight: 600;
-//     color: #333;
-//     margin-top: 5px;
-//     margin-bottom: 15px;
-// }
-
-// .infiniteLoader {
-//     text-align: center;
-//     padding: 20px 0;
-//     color: #999;
-// }
-
-// .menuItem {
-//     display: flex;
-//     background-color: white;
-//     border-radius: 12px;
-//     margin-bottom: 15px;
-//     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-//     padding: 10px;
-//     align-items: center;
-// }
-
-// .itemImagePlaceholder {
-//     width: 60px;
-//     height: 60px;
-//     background-color: #eee;
-//     border-radius: 8px;
-//     margin-right: 10px;
-//     flex-shrink: 0;
-// }
-
-// .itemInfo {
-//     flex-grow: 1;
-// }
-
-// .itemName {
-//     font-size: 16px;
-//     font-weight: 600;
-//     color: #333;
-//     margin: 0;
-// }
-
-// .itemPrice {
-//     font-size: 14px;
-//     color: #4CAF50;
-//     font-weight: 700;
-//     margin-top: 5px;
-// }
-
-// .actionButtonContainer {
-//     flex-shrink: 0;
-// }
-
-// .addButton {
-//     width: 35px;
-//     height: 35px;
-//     border-radius: 50%;
-//     background-color: #4CAF50; /* Green Add Button */
-//     color: white;
-//     border: none;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     cursor: pointer;
-//     box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4);
-// }
-
-// .counter {
-//     display: flex;
-//     align-items: center;
-//     border: 1px solid #ddd;
-//     border-radius: 20px;
-//     overflow: hidden;
-//     background-color: white;
-// }
-
-// .counterButton {
-//     background-color: white;
-//     border: none;
-//     padding: 8px 10px;
-//     cursor: pointer;
-//     color: #4CAF50;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-// }
-
-// .count {
-//     padding: 0 5px;
-//     font-weight: 600;
-//     font-size: 16px;
-//     color: #333;
-// }
-
-// .nextButton {
-//     position: fixed;
-//     bottom: 20px;
-//     left: 50%;
-//     transform: translateX(-50%);
-//     width: 90%;
-//     max-width: 400px; 
-//     padding: 15px;
-//     border: none;
-//     border-radius: 12px;
-//     background-color: #4CAF50; /* Green button */
-//     color: white;
-//     font-size: 18px;
-//     font-weight: 700;
-//     cursor: pointer;
-//     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-//     z-index: 100;
-// }
-
-
-// /* --- Checkout Page Styles --- */
-// .checkoutContainer {
-//     padding-bottom: 100px; /* Space for swipe bar */
-// }
-// .checkoutTitle {
-//     font-size: 24px;
-//     font-weight: 700;
-//     color: #333;
-//     margin: 0 0 20px 0;
-// }
-
-// .backButton {
-//     background: none;
-//     border: none;
-//     color: #333;
-//     padding: 0;
-//     margin-bottom: 10px;
-//     cursor: pointer;
-// }
-
-// .orderTypeToggle {
-//     display: flex;
-//     justify-content: space-between;
-//     background-color: white;
-//     border-radius: 12px;
-//     padding: 5px;
-//     margin-bottom: 20px;
-//     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-// }
-
-// .toggleButton {
-//     flex: 1;
-//     padding: 12px;
-//     border: none;
-//     background-color: transparent;
-//     border-radius: 10px;
-//     font-size: 16px;
-//     font-weight: 600;
-//     cursor: pointer;
-//     transition: background-color 0.2s;
-// }
-
-// .toggleSelected {
-//     background-color: #333; /* Selected style */
-//     color: white;
-// }
-
-// .instructionsBox {
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     padding: 15px;
-//     margin-bottom: 20px;
-//     background-color: white;
-//     border-radius: 10px;
-//     cursor: pointer;
-//     color: #444;
-// }
-// .instructionTextPlaceholder {
-//     color: #999;
-//     font-size: 15px;
-// }
-// .instructionTextFilled {
-//     color: #333;
-//     font-size: 15px;
-//     font-weight: 500;
-// }
-
-// /* --- Summary and Form Styles --- */
-// .detailsForm, .cartItemsSummary, .orderSummary {
-//     padding: 15px;
-//     margin-bottom: 20px;
-//     background-color: white;
-//     border-radius: 10px;
-//     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-// }
-
-// .summaryTitle {
-//     font-size: 18px;
-//     font-weight: 600;
-//     margin-bottom: 15px;
-//     color: #333;
-// }
-
-// .inputField {
-//     width: 100%;
-//     padding: 12px;
-//     margin-bottom: 10px;
-//     border: 1px solid #eee;
-//     border-radius: 8px;
-//     font-size: 16px;
-//     box-sizing: border-box;
-//     background-color: #fcfcfc;
-// }
-// .inputField:focus {
-//     border-color: #4CAF50;
-//     outline: none;
-// }
-// .inputField::placeholder {
-//     color: #aaa;
-// }
-// .deliveryTime {
-//     font-size: 14px;
-//     color: #4CAF50;
-//     font-weight: 500;
-//     margin-top: 10px;
-// }
-
-// .cartItemLine, .summaryLine {
-//     display: flex;
-//     justify-content: space-between;
-//     font-size: 15px;
-//     padding: 5px 0;
-//     color: #666;
-// }
-// .summaryLine:not(.grandTotal) {
-//     border-bottom: 1px dotted #eee;
-// }
-
-// .grandTotal {
-//     font-weight: 700;
-//     color: #333;
-//     border-top: 2px solid #333;
-//     padding-top: 10px;
-//     margin-top: 10px;
-//     font-size: 18px;
-// }
-
-// /* --- Swipe to Order Styles (Based on Image) --- */
-// .swipeToOrderBar {
-//     position: fixed;
-//     bottom: 0;
-//     left: 50%;
-//     transform: translateX(-50%);
-//     width: 100%; /* Full width of its container (max-width: 450px) */
-//     max-width: 450px;
-//     background-color: #333; /* Dark background */
-//     color: white;
-//     padding: 15px 20px;
-//     border-radius: 15px 15px 0 0;
-//     font-size: 18px;
-//     font-weight: 700;
-//     display: flex;
-//     justify-content: center;
-//     align-items: center;
-//     cursor: pointer;
-//     height: 70px;
-//     box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
-//     z-index: 100;
-//     box-sizing: border-box; /* Include padding in width */
-// }
-
-// .swipeHandle {
-//     position: absolute;
-//     right: 20px;
-//     width: 40px;
-//     height: 40px;
-//     background-color: #4CAF50; /* Green handle for contrast */
-//     border-radius: 50%;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-//     /* Adding a slight animation to suggest swiping */
-//     animation: swipeHint 1.5s infinite;
-// }
-
-// @keyframes swipeHint {
-//     0% { transform: translateX(0); }
-//     50% { transform: translateX(5px); }
-//     100% { transform: translateX(0); }
-// }
-
-
-// /* --- Cooking Instructions Modal Styles --- */
-// .instructionsModalOverlay {
-//     position: fixed;
-//     top: 0;
-//     left: 0;
-//     right: 0;
-//     bottom: 0;
-//     background: rgba(0, 0, 0, 0.7);
-//     display: flex;
-//     justify-content: center;
-//     align-items: flex-end; 
-//     z-index: 1000;
-// }
-
-// .instructionsModal {
-//     background: white;
-//     width: 100%;
-//     max-width: 450px;
-//     padding: 20px;
-//     border-radius: 20px 20px 0 0;
-//     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
-//     animation: slideUp 0.3s ease-out;
-// }
-
-// @keyframes slideUp {
-//     from { transform: translateY(100%); }
-//     to { transform: translateY(0); }
-// }
-
-// .modalHeader {
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     margin-bottom: 15px;
-// }
-// .modalClose, .modalNext {
-//     background: none;
-//     border: none;
-//     cursor: pointer;
-//     padding: 0;
-//     color: #333;
-//     font-weight: 600;
-// }
-// .modalNext {
-//     color: #4CAF50;
-//     font-size: 16px;
-// }
-// .modalTitle {
-//     margin: 0;
-//     font-size: 18px;
-//     font-weight: 700;
-// }
-
-// .instructionsTextarea {
-//     width: 100%;
-//     height: 150px;
-//     padding: 15px;
-//     border: 1px solid #ddd;
-//     border-radius: 8px;
-//     font-size: 16px;
-//     resize: none;
-//     margin-bottom: 15px;
-//     box-sizing: border-box;
-// }
-
-// .instructionWarning {
-//     font-size: 12px;
-//     color: #f44336; 
-//     padding: 10px;
-//     background-color: #fff3f3;
-//     border-radius: 8px;
-//     font-weight: 500;
-// }
-
-
-// /* --- Thank You Page Styles (Centered and Clean) --- */
-// .thankYouIcon {
-//     color: #4CAF50;
-//     margin-bottom: 20px;
-// }
-
-// .thankYouTitle {
-//     font-size: 28px;
-//     font-weight: 700;
-//     color: #333;
-//     margin-bottom: 10px;
-// }
-
-// .redirectText {
-//     font-size: 16px;
-//     color: #666;
-// }
-// `;
-
-// export default App;
-
-
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 // --- Custom Raw CSS Styling ---
@@ -1230,13 +319,19 @@ const rawCssStyles = `
     color: #1F2937;
   }
   .form-input, .form-textarea, .form-select {
+    /* FIX: Ensure proper box model and width */
     width: 100%;
+    min-width: 0; 
+    box-sizing: border-box; /* Ensures padding doesn't push it wider than 100% */
     padding: 1rem;
     border: 1px solid #E5E7EB;
     border-radius: 0.75rem;
     background-color: #F9FAFB;
     transition: all 150ms;
     outline: none;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
   }
   .form-input:focus, .form-textarea:focus, .form-select:focus {
     border-color: #DC2626;
@@ -1244,6 +339,8 @@ const rawCssStyles = `
   }
   .form-textarea {
     resize: none;
+    white-space: normal; /* Allow text wrapping in textarea */
+    overflow: auto;
   }
   .form-submit-button {
     width: 100%;
@@ -1550,66 +647,9 @@ const useLocalStorageState = (key, defaultValue) => {
   return [value, setValue];
 };
 
-// --- App Component ---
-export default function App() {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'checkout', 'details', 'cooking-instructions', 'thank-you'
-  const [cart, setCart] = useLocalStorageState('foodAppCart', []);
-  const [userData, setUserData] = useLocalStorageState('foodAppUser', {
-    mode: 'Take Away', // 'Dine In' or 'Take Away'
-    name: '',
-    phone: '',
-    address: '',
-    members: '2'
-  });
-  const [cookingInstructions, setCookingInstructions] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+// --- Helper Components ---
 
-  // --- Cart Logic ---
-  const addItemToCart = useCallback((item) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(i => i.id === item.id);
-      if (existingItem) {
-        return prevCart.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prevCart, { ...item, quantity: 1 }];
-    });
-  }, [setCart]);
-
-  const updateCartQuantity = useCallback((itemId, newQuantity) => {
-    setCart(prevCart => {
-      if (newQuantity <= 0) {
-        return prevCart.filter(i => i.id !== itemId);
-      }
-      return prevCart.map(i =>
-        i.id === itemId ? { ...i, quantity: newQuantity } : i
-      );
-    });
-  }, [setCart]);
-
-  const cartTotal = useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
-
-  // --- Navigation & Flow ---
-  const navigateTo = (page) => setCurrentPage(page);
-
-  const handleOrderPlace = () => {
-    // Simulating order placement success
-    if (cart.length === 0) return;
-
-    setCart([]);
-    setCookingInstructions('');
-    navigateTo('thank-you');
-
-    // Redirect after 3 seconds as per SRD
-    setTimeout(() => {
-      navigateTo('home');
-    }, 3000);
-  };
-
-  // --- Components ---
-
-  const BackButton = ({ onClick }) => (
+const BackButton = ({ onClick }) => (
     <button
       onClick={onClick}
       className="back-button"
@@ -1627,112 +667,144 @@ export default function App() {
         <path d="m15 18-6-6 6-6"/>
       </svg>
     </button>
-  );
+);
 
-  const ThankYouScreen = () => {
-    const [countdown, setCountdown] = useState(3);
-
-    useEffect(() => {
-      if (countdown > 0) {
-        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-        return () => clearTimeout(timer);
-      }
-    }, [countdown]);
-
-    return (
-      <div className="thank-you-container">
-        <div className="check-mark-bg">
-          <svg className="check-mark-svg" width="64" height="64" viewBox="0 0 52 52">
-            <polyline points="14,26 24,36 38,18" />
-          </svg>
-        </div>
-        <h1 style={{fontSize: '1.875rem', fontWeight: '800', marginBottom: '0.5rem'}}>Thanks For Ordering</h1>
-        <p style={{fontSize: '1.25rem', fontWeight: '300'}}>Redirecting in {countdown}</p>
+const ThankYouScreen = ({ countdown }) => (
+    <div className="thank-you-container">
+      <div className="check-mark-bg">
+        <svg className="check-mark-svg" width="64" height="64" viewBox="0 0 52 52">
+          <polyline points="14,26 24,36 38,18" />
+        </svg>
       </div>
-    );
-  };
+      <h1 style={{fontSize: '1.875rem', fontWeight: '800', marginBottom: '0.5rem'}}>Thanks For Ordering</h1>
+      <p style={{fontSize: '1.25rem', fontWeight: '300'}}>Redirecting in {countdown}</p>
+    </div>
+);
 
-  const UserDetailsForm = ({ onNext }) => {
+// --- User Details Form (Refactored outside App to fix focus) ---
+const UserDetailsForm = ({ userData, setUserData, onNext, currentPage }) => {
     const isTakeAway = userData.mode === 'Take Away';
 
     const handleInputChange = (e) => {
-      const { name, value } = e.target;
-      setUserData(prev => ({ ...prev, [name]: value }));
+        const { name, value } = e.target;
+        
+        // Validation for Phone Number
+        if (name === 'phone') {
+            // Allow only digits and limit to 10 characters
+            const cleanedValue = value.replace(/\D/g, '').slice(0, 10);
+            setUserData(prev => ({ ...prev, [name]: cleanedValue }));
+        } else {
+            setUserData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const isFormValid = useMemo(() => {
-      const { name, phone, address, members } = userData;
-      // Basic validation: Name must exist, Phone must be 10 digits
-      const phoneValid = phone && phone.length === 10 && !isNaN(phone);
+        const { name, phone, address, members } = userData;
+        // Basic validation: Name must exist, Phone must be 10 digits
+        const phoneValid = phone && phone.length === 10 && /^\d{10}$/.test(phone);
 
-      if (!name || !phoneValid) return false;
-      if (isTakeAway && !address) return false;
-      if (!isTakeAway && (!members || members === '')) return false;
-      return true;
+        if (!name || !phoneValid) return false;
+        if (isTakeAway && !address) return false;
+        if (!isTakeAway && (!members || members === '')) return false;
+        return true;
     }, [userData, isTakeAway]);
 
     return (
-      <div className="details-form-container">
+        <div className="details-form-container">
         <h2 className="details-form-title">Enter Your Details</h2>
 
         {/* Name Input */}
         <input
-          name="name"
-          placeholder="Full Name"
-          value={userData.name}
-          onChange={handleInputChange}
-          className="form-input"
+            name="name"
+            placeholder="Full Name"
+            value={userData.name}
+            onChange={handleInputChange}
+            className="form-input"
         />
 
         {/* Phone Input */}
         <input
-          name="phone"
-          placeholder="Contact (Phone Number)"
-          value={userData.phone}
-          onChange={handleInputChange}
-          type="tel"
-          maxLength="10"
-          className="form-input"
+            name="phone"
+            placeholder="Contact (Phone Number) - 10 Digits"
+            value={userData.phone}
+            onChange={handleInputChange}
+            type="tel"
+            maxLength="10"
+            className="form-input"
         />
 
         {isTakeAway ? (
-          /* Address Input for Take Away */
-          <textarea
+            /* Address Input for Take Away */
+            <textarea
             name="address"
-            placeholder="Complete Address (Flat no: 301, SVR Enclave...)"
+            placeholder="Complete Address (e.g., Flat no: 301, SVR Enclave...)"
             value={userData.address}
             onChange={handleInputChange}
             rows="3"
             className="form-textarea"
-          />
+            />
         ) : (
-          /* Members Select for Dine In */
-          <select
+            /* Members Select for Dine In */
+            <select
             name="members"
             value={userData.members}
             onChange={handleInputChange}
             className="form-select"
-          >
+            >
             <option value="">Number of Persons</option>
             {TABLE_SIZES.map(size => (
-              <option key={size} value={String(size)}>{size} Person Table</option>
+                <option key={size} value={String(size)}>{size} Person Table</option>
             ))}
-          </select>
+            </select>
         )}
 
         <button
-          onClick={onNext}
-          disabled={!isFormValid}
-          className="form-submit-button"
+            onClick={onNext}
+            disabled={!isFormValid}
+            className="form-submit-button"
         >
-          {currentPage === 'details' ? 'Order Now' : 'Proceed to Order Summary'}
+            {currentPage === 'details' ? 'Order Now' : 'Proceed to Order Summary'}
         </button>
         {isTakeAway && <p style={{textAlign: 'center', fontSize: '0.875rem', color: '#059669', fontWeight: '600'}}>Avg. Delivery Time: 42 mins</p>}
-      </div>
+        </div>
     );
-  };
+};
 
-  const CheckoutScreen = () => {
+// --- Cooking Instructions Modal ---
+const CookingInstructionsModal = ({ cookingInstructions, setCookingInstructions, navigateTo }) => (
+    <div className="modal-overlay" onClick={() => navigateTo('details')}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#1F2937'}}>Add Cooking Instructions</h2>
+          <button onClick={() => navigateTo('details')} style={{color: '#6B7280', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.25rem'}}>
+            {/* Close Icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <p style={{fontSize: '0.875rem', color: '#6B7280', marginBottom: '1rem'}}>
+          The restaurant will try its best to follow your request. However, refunds or cancellations in this regard won't be possible.
+        </p>
+        <textarea
+          placeholder="Enter instructions here..."
+          value={cookingInstructions}
+          onChange={(e) => setCookingInstructions(e.target.value)}
+          rows="5"
+          className="modal-textarea"
+        />
+        <div className="modal-buttons">
+          <button onClick={() => { setCookingInstructions(''); navigateTo('details'); }} className="modal-button-default">
+            Remove and Go Back
+          </button>
+          <button onClick={() => navigateTo('details')} className="modal-button-primary">
+            Save and Continue
+          </button>
+        </div>
+      </div>
+    </div>
+);
+
+// --- Checkout Screen (Refactored outside App) ---
+const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstructions, navigateTo, updateCartQuantity, handleOrderPlace, cartTotal }) => {
     const isTakeAway = userData.mode === 'Take Away';
     const deliveryCharge = isTakeAway ? 50 : 0;
     const taxes = 5.00; // Mock fixed tax
@@ -1740,75 +812,75 @@ export default function App() {
 
     // --- Component for Swipe to Order (Raw CSS/Inline Style) ---
     const SwipeToOrderButton = () => {
-      const [isSwiping, setIsSwiping] = useState(false);
-      const [startX, setStartX] = useState(0);
-      const [currentX, setCurrentX] = useState(0);
-      const threshold = 150; // Distance to count as a 'swipe'
-      const maxSwipe = 250;
+        const [isSwiping, setIsSwiping] = useState(false);
+        const [startX, setStartX] = useState(0);
+        const [currentX, setCurrentX] = useState(0);
+        const threshold = 150; // Distance to count as a 'swipe'
+        const maxSwipe = 250;
 
-      const handleStart = (clientX) => {
-        setIsSwiping(true);
-        setStartX(clientX);
-      };
+        const handleStart = (clientX) => {
+            setIsSwiping(true);
+            setStartX(clientX);
+        };
 
-      const handleMove = (clientX) => {
-        if (!isSwiping) return;
-        const diffX = clientX - startX;
-        // Restrict movement between 0 and maxSwipe
-        setCurrentX(Math.min(maxSwipe, Math.max(0, diffX)));
-      };
+        const handleMove = (clientX) => {
+            if (!isSwiping) return;
+            const diffX = clientX - startX;
+            // Restrict movement between 0 and maxSwipe
+            setCurrentX(Math.min(maxSwipe, Math.max(0, diffX)));
+        };
 
-      const handleEnd = () => {
-        if (!isSwiping) return;
-        setIsSwiping(false);
-        if (currentX > threshold) {
-          handleOrderPlace();
-        }
-        setCurrentX(0); // Reset position
-      };
+        const handleEnd = () => {
+            if (!isSwiping) return;
+            setIsSwiping(false);
+            if (currentX > threshold) {
+            handleOrderPlace();
+            }
+            setCurrentX(0); // Reset position
+        };
 
-      const handleTouchStart = (e) => handleStart(e.touches[0].clientX);
-      const handleTouchMove = (e) => handleMove(e.touches[0].clientX);
-      const handleTouchEnd = () => handleEnd();
+        const handleTouchStart = (e) => handleStart(e.touches[0].clientX);
+        const handleTouchMove = (e) => handleMove(e.touches[0].clientX);
+        const handleTouchEnd = () => handleEnd();
 
-      const handleMouseDown = (e) => handleStart(e.clientX);
-      const handleMouseMove = (e) => handleMove(e.clientX);
-      const handleMouseUp = () => handleEnd();
-      const handleMouseLeave = () => isSwiping && handleEnd(); // Important for desktop simulation
+        const handleMouseDown = (e) => handleStart(e.clientX);
+        const handleMouseMove = (e) => handleMove(e.clientX);
+        const handleMouseUp = () => handleEnd();
+        const handleMouseLeave = () => isSwiping && handleEnd(); // Important for desktop simulation
 
-      const swipeStyle = {
-        transform: `translateX(${currentX}px)`,
-        transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
-        cursor: isSwiping ? 'grabbing' : 'grab'
-      };
-      
-      const textOpacity = currentX > 50 ? 0.3 : 1;
-      const textTransition = isSwiping ? 'none' : 'opacity 0.3s';
+        const swipeStyle = {
+            transform: `translateX(${currentX}px)`,
+            transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
+            cursor: isSwiping ? 'grabbing' : 'grab'
+        };
+        
+        const textOpacity = currentX > 50 ? 0.3 : 1;
+        const textTransition = isSwiping ? 'none' : 'opacity 0.3s';
 
-      return (
-        <div className="swipe-to-order-footer">
-          <div
-            className="swipe-button-base"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className="swipe-handle" style={swipeStyle}>
-              {'>'}
-            </div>
-            <span 
-                className="swipe-text" 
-                style={{ opacity: textOpacity, transition: textTransition }}
+        return (
+            <div className="swipe-to-order-footer">
+            <div
+                className="swipe-button-base"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
             >
-              Swipe to Order (₹{grandTotal.toFixed(2)})
-            </span>
-          </div>
-        </div>
-      );
+                <div className="swipe-handle" style={swipeStyle}>
+                {'>'}
+                </div>
+                <span 
+                    className="swipe-text" 
+                    style={{ opacity: textOpacity, transition: textTransition }}
+                >
+                Swipe to Place Order (₹{grandTotal.toFixed(2)})
+                </span>
+            </div>
+            </div>
+        );
     };
 
     const UserDetailsDisplay = () => (
@@ -1818,17 +890,17 @@ export default function App() {
         {isTakeAway ? (
           <>
             <p style={{fontSize: '0.75rem', color: '#6B7280', marginTop: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-              Delivery at Home - {userData.address || 'Address not entered'}
+              Home Delivery - {userData.address || 'Address Not Entered'}
             </p>
             <p style={{fontSize: '0.75rem', color: '#059669', fontWeight: '600', marginTop: '0.25rem'}}>Delivery in 42 mins</p>
           </>
         ) : (
           <p style={{fontSize: '0.75rem', color: '#6B7280', marginTop: '0.25rem'}}>
-            Dine In - Table for **{userData.members}** members
+            Dine In - **{userData.members}** Person Table
           </p>
         )}
         <button className="edit-button" onClick={() => navigateTo('checkout')}>
-          Edit Details
+          Edit
         </button>
       </div>
     );
@@ -1838,7 +910,7 @@ export default function App() {
         {/* Header */}
         <div className="page-header">
           <BackButton onClick={() => navigateTo('home')} />
-          <h1 className="page-title">Place your order here</h1>
+          <h1 className="page-title">Place Your Order Here</h1>
         </div>
 
         {/* Mode Toggle */}
@@ -1862,7 +934,12 @@ export default function App() {
         {/* Main Content Area */}
         <div style={{flexGrow: 1, overflowY: 'auto', padding: currentPage === 'details' ? '1.25rem' : '0'}}>
           {currentPage === 'checkout' && (
-            <UserDetailsForm onNext={() => navigateTo('details')} />
+            <UserDetailsForm 
+              userData={userData} 
+              setUserData={setUserData} 
+              onNext={() => navigateTo('details')} 
+              currentPage={currentPage} 
+            />
           )}
 
           {currentPage === 'details' && (
@@ -1891,7 +968,7 @@ export default function App() {
                 className="instructions-button"
                 onClick={() => navigateTo('cooking-instructions')}
               >
-                {cookingInstructions.length > 0 ? `Instructions Added (${cookingInstructions.length} chars)` : 'Add cooking instructions (optional)'}
+                {cookingInstructions.length > 0 ? `Instructions Added (${cookingInstructions.length} characters)` : 'Add Cooking Instructions (Optional)'}
               </button>
 
               <UserDetailsDisplay />
@@ -1920,41 +997,10 @@ export default function App() {
         )}
       </div>
     );
-  };
+};
 
-  const CookingInstructionsModal = () => (
-    <div className="modal-overlay" onClick={() => navigateTo('details')}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#1F2937'}}>Add Cooking Instructions</h2>
-          <button onClick={() => navigateTo('details')} style={{color: '#6B7280', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.25rem'}}>
-            {/* Close Icon */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
-        </div>
-        <p style={{fontSize: '0.875rem', color: '#6B7280', marginBottom: '1rem'}}>
-          The restaurant will try its best to follow your request. However, refunds or cancellations in this regard won't be possible.
-        </p>
-        <textarea
-          placeholder="Enter instructions here..."
-          value={cookingInstructions}
-          onChange={(e) => setCookingInstructions(e.target.value)}
-          rows="5"
-          className="modal-textarea"
-        />
-        <div className="modal-buttons">
-          <button onClick={() => { setCookingInstructions(''); navigateTo('details'); }} className="modal-button-default">
-            Clear & Back
-          </button>
-          <button onClick={() => navigateTo('details')} className="modal-button-primary">
-            Save & Next
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const HomeScreen = () => {
+// --- Home Screen (Refactored outside App) ---
+const HomeScreen = ({ cart, searchTerm, setSearchTerm, updateCartQuantity, addItemToCart, navigateTo, cartTotal }) => {
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     const filteredItems = useMemo(() => {
@@ -2033,14 +1079,14 @@ export default function App() {
         {/* Header and Search (Sticky) */}
         <div className="header-sticky">
           <header style={{marginBottom: '1rem'}}>
-            <div style={{fontSize: '1.25rem', fontWeight: '500', color: '#6B7280'}}>Good evening</div>
-            <div style={{fontSize: '1.875rem', fontWeight: '800', color: '#1F2937'}}>Place your order here</div>
+            <div style={{fontSize: '1.25rem', fontWeight: '500', color: '#6B7280'}}>Good Evening</div>
+            <div style={{fontSize: '1.875rem', fontWeight: '800', color: '#1F2937'}}>Place Your Order Here</div>
           </header>
 
           <div className="search-wrapper">
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search Menu"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -2077,7 +1123,7 @@ export default function App() {
           <footer className="footer-checkout">
             <div className="checkout-button-bar" onClick={() => navigateTo('checkout')}>
               <div className="checkout-summary-text">
-                {cart.length} item(s) | <span style={{fontWeight: '800'}}>₹{cartTotal.toFixed(2)}</span>
+                {cart.length} Item(s) | <span style={{fontWeight: '800'}}>₹{cartTotal.toFixed(2)}</span>
               </div>
               <div className="checkout-next-text">
                 <span>Next</span>
@@ -2089,17 +1135,90 @@ export default function App() {
         )}
       </div>
     );
-  };
+};
+
+// --- App Component ---
+export default function App() {
+  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'checkout', 'details', 'cooking-instructions', 'thank-you'
+  const [cart, setCart] = useLocalStorageState('foodAppCart', []);
+  const [userData, setUserData] = useLocalStorageState('foodAppUser', {
+    mode: 'Take Away', // 'Dine In' or 'Take Away'
+    name: '',
+    phone: '',
+    address: '',
+    members: '2'
+  });
+  const [cookingInstructions, setCookingInstructions] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [countdown, setCountdown] = useState(3);
+
+
+  // --- Cart Logic ---
+  const addItemToCart = useCallback((item) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(i => i.id === item.id);
+      if (existingItem) {
+        return prevCart.map(i =>
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      }
+      return [...prevCart, { ...item, quantity: 1 }];
+    });
+  }, [setCart]);
+
+  const updateCartQuantity = useCallback((itemId, newQuantity) => {
+    setCart(prevCart => {
+      if (newQuantity <= 0) {
+        return prevCart.filter(i => i.id !== itemId);
+      }
+      return prevCart.map(i =>
+        i.id === itemId ? { ...i, quantity: newQuantity } : i
+      );
+    });
+  }, [setCart]);
+
+  const cartTotal = useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
+
+  // --- Navigation & Flow ---
+  const navigateTo = useCallback((page) => setCurrentPage(page), []);
+
+  const handleOrderPlace = useCallback(() => {
+    // Simulating order placement success
+    if (cart.length === 0) return;
+
+    // Reset countdown for thank you screen
+    setCountdown(3);
+
+    setCart([]);
+    setCookingInstructions('');
+    navigateTo('thank-you');
+
+    // Redirect after 3 seconds
+    const timer = setTimeout(() => {
+      navigateTo('home');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [cart.length, navigateTo, setCart, setCookingInstructions]);
+
+  // Countdown effect for Thank You screen
+  useEffect(() => {
+    if (currentPage === 'thank-you' && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, countdown]);
+
 
   const renderContent = () => {
     // Show NoCartScreen if trying to access checkout/details with an empty cart
-    if ((currentPage === 'checkout' || currentPage === 'details') && cart.length === 0) {
+    if ((currentPage === 'checkout' || currentPage === 'details' || currentPage === 'cooking-instructions') && cart.length === 0) {
       return (
         <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center', padding: '1.5rem'}}>
           <h1 style={{fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem', color: '#1F2937'}}>Your Cart is Empty</h1>
           <p style={{color: '#6B7280', marginBottom: '1.5rem'}}>Please add some delicious items to place an order.</p>
           <button onClick={() => navigateTo('home')} className="form-submit-button" style={{maxWidth: '15rem'}}>
-            Go Back to Menu
+            Back to Menu
           </button>
         </div>
       );
@@ -2107,22 +1226,68 @@ export default function App() {
 
     switch (currentPage) {
       case 'home':
-        return <HomeScreen />;
+        return (
+            <HomeScreen 
+                cart={cart} 
+                searchTerm={searchTerm} 
+                setSearchTerm={setSearchTerm} 
+                updateCartQuantity={updateCartQuantity} 
+                addItemToCart={addItemToCart} 
+                navigateTo={navigateTo}
+                cartTotal={cartTotal}
+            />
+        );
       case 'checkout':
       case 'details':
-        return <CheckoutScreen />;
+        return (
+            <CheckoutScreen 
+                currentPage={currentPage}
+                cart={cart}
+                userData={userData}
+                setUserData={setUserData}
+                cookingInstructions={cookingInstructions}
+                navigateTo={navigateTo}
+                updateCartQuantity={updateCartQuantity}
+                handleOrderPlace={handleOrderPlace}
+                cartTotal={cartTotal}
+            />
+        );
       case 'cooking-instructions':
         return (
           // Render CheckoutScreen first, then the modal overlay on top
           <>
-            <CheckoutScreen />
-            <CookingInstructionsModal />
+            <CheckoutScreen 
+                currentPage='details' // Always show the details view under the modal
+                cart={cart}
+                userData={userData}
+                setUserData={setUserData}
+                cookingInstructions={cookingInstructions}
+                navigateTo={navigateTo}
+                updateCartQuantity={updateCartQuantity}
+                handleOrderPlace={handleOrderPlace}
+                cartTotal={cartTotal}
+            />
+            <CookingInstructionsModal 
+                cookingInstructions={cookingInstructions} 
+                setCookingInstructions={setCookingInstructions} 
+                navigateTo={navigateTo}
+            />
           </>
         );
       case 'thank-you':
-        return <ThankYouScreen />;
+        return <ThankYouScreen countdown={countdown} />;
       default:
-        return <HomeScreen />;
+        return (
+            <HomeScreen 
+                cart={cart} 
+                searchTerm={searchTerm} 
+                setSearchTerm={setSearchTerm} 
+                updateCartQuantity={updateCartQuantity} 
+                addItemToCart={addItemToCart} 
+                navigateTo={navigateTo}
+                cartTotal={cartTotal}
+            />
+        );
     }
   };
 
