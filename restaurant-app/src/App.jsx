@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import './App.css'
 
-// --- Local Storage and Utility Hooks ---
+//  Local Storage and Utility Hooks 
 
-/**
- * Custom hook to manage state persistence using localStorage.
- * Initializes state from localStorage on load and saves changes automatically.
- */
 const useLocalStorage = (key, initialValue) => {
     const [storedValue, setStoredValue] = useState(() => {
         try {
@@ -36,7 +33,7 @@ const useLocalStorage = (key, initialValue) => {
     return [storedValue, setValue];
 };
 
-/** Utility hook for interval logic (e.g., order countdown). */
+// Utility hook for interval logic  
 const useInterval = (callback, delay) => {
     const savedCallback = useRef();
 
@@ -57,7 +54,7 @@ const useInterval = (callback, delay) => {
     }, [delay]);
 };
 
-// --- Mock Initial Data (Used if localStorage is empty) ---
+// Initial Data 
 
 const initialDashboardData = {
     chefs: 4,
@@ -148,9 +145,9 @@ const initialMenuData = [
     },
 ];
 
-// --- Utility Components ---
+// Utility Components
 
-/** Card for displaying key analytical metrics. */
+// Card for displaying key analytical
 const AnalyticsCard = ({ title, value }) => (
     <div className="analytics-card transition-all">
         <div className="analytics-card__value">{value}</div>
@@ -158,7 +155,7 @@ const AnalyticsCard = ({ title, value }) => (
     </div>
 );
 
-/** Custom Order Summary Card */
+//  Custom Order Summary Card 
 const OrderSummaryMetricCard = ({ title, value }) => (
     <div className="metric-card transition-all">
         <div className="metric-card__value">{value}</div>
@@ -166,7 +163,7 @@ const OrderSummaryMetricCard = ({ title, value }) => (
     </div>
 );
 
-/** Single Table Card Component (for Tables Management) */
+// Single Table Card Component (for Tables Management)
 const TableCard = ({ table, onDelete }) => {
     const cardClass = table.isReserved ? 'table-card--reserved' : 'table-card--unreserved';
     const capacityIconClass = table.isReserved ? 'table-card__capacity-icon--reserved' : 'table-card__capacity-icon--unreserved';
@@ -202,7 +199,7 @@ const TableCard = ({ table, onDelete }) => {
                 <p className="table-card__id">{table.id.toString().padStart(2, '0')}</p>
             </div>
 
-            {/* Bottom Row: Capacity (Chair Icon) */}
+            {/* Bottom Row */}
             <div className="flex-align-center text-sm font-semibold mt-1">
                 <svg className={`w-4 h-4 mr-1 ${capacityIconClass}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16 8C16 9.10457 15.1046 10 14 10C12.8954 10 12 9.10457 12 8C12 6.89543 12.8954 6 14 6C15.1046 6 16 6.89543 16 8Z" />
@@ -215,9 +212,9 @@ const TableCard = ({ table, onDelete }) => {
     );
 };
 
-/** Single Order Card Component (for Order Line) */
+// Single Order Card Component (for Order Line) 
 const OrderCard = ({ order, onOrderDone }) => {
-    // Calculate initial time left: (preparationTime * 1000) - (currentTime - startTime)
+    // Calculate initial time left
     const initialTimeLeftMs = Math.max(0, (order.preparationTime * 1000) - (Date.now() - order.startTime));
     const [timeLeftMs, setTimeLeftMs] = useState(initialTimeLeftMs);
     const [isProcessing, setIsProcessing] = useState(!order.isDone && initialTimeLeftMs > 0);
@@ -352,7 +349,7 @@ const MenuItemCard = ({ item }) => {
 };
 
 
-// --- MENU MANAGEMENT COMPONENT ---
+// MENU MANAGEMENT COMPONENT
 const MenuManagement = ({ menu }) => {
     return (
         <div className="flex-col p-6 space-y-6">
@@ -537,7 +534,7 @@ const TablesManagement = ({ tables, setTables }) => {
         <button
           onClick={() => {
             handleAddTable();
-            setShowAddModal(false); // ✅ auto-close modal after table creation
+            setShowAddModal(false); 
           }}
           className="modal-submit-btn"
         >
@@ -569,7 +566,7 @@ const TablesManagement = ({ tables, setTables }) => {
 
 
 
-// --- ORDERS COMPONENT ---
+// ORDERS COMPONENT 
 const OrdersSummary = ({ orders, setOrders }) => {
     
     const handleOrderDone = (orderId) => {
@@ -580,7 +577,7 @@ const OrdersSummary = ({ orders, setOrders }) => {
         console.log(`Order ${orderId} marked as done.`);
     };
 
-    // Filter to only show active (not done) orders
+    // Filter to only show active 
     const activeOrders = orders.filter(o => !o.isDone);
     const completedOrders = orders.filter(o => o.isDone);
 
@@ -609,7 +606,7 @@ const OrdersSummary = ({ orders, setOrders }) => {
                 <div className="mt-8 pt-6 border-t-gray">
                     <h3 className="text-xl font-semibold-gray-700 mb-4">Completed Orders ({completedOrders.length})</h3>
                     <div className="orders-grid order-card--done-opacity">
-                         {completedOrders.slice(0, 4).map(order => ( // Show last 4 completed orders
+                         {completedOrders.slice(0, 4).map(order => ( 
                             <OrderCard 
                                 key={order.id} 
                                 order={order} 
@@ -624,7 +621,7 @@ const OrdersSummary = ({ orders, setOrders }) => {
 };
 
 
-// --- DASHBOARD COMPONENT ---
+// DASHBOARD COMPONENT
 const AnalyticsDashboard = ({ data }) => {
     return (
         <div className="flex-col p-6 space-y-6">
@@ -638,9 +635,9 @@ const AnalyticsDashboard = ({ data }) => {
                 <AnalyticsCard title="Total Clients" value={data.totalClients} />
             </div>
 
-            {/* Orders Summary and Tables/Chef Config */}
+            {/* Orders Summary and Tables*/}
             <div className="dashboard-grid dashboard-grid-3-cols">
-                {/* Orders Summary (2/3rds width) */}
+                {/* Orders Summary */}
                 <div className="col-span-2 bg-white p-6 rounded-xl shadow-lg">
                     <h3 className="text-xl font-semibold-gray-800 mb-4 border-b-gray pb-2">Orders Summary</h3>
                     
@@ -651,7 +648,7 @@ const AnalyticsDashboard = ({ data }) => {
                         <OrderSummaryMetricCard title="Takeaway Orders" value={data.takeaway.toString().padStart(2, '0')} />
                     </div>
 
-                    {/* Progress Bars (Mocked Graph) */}
+                    {/* Progress Bars */}
                     <div className="space-y-4 pt-4 progress-container">
                         {data.orderTypeProgress.map((item, index) => (
                             <div key={index}>
@@ -670,7 +667,7 @@ const AnalyticsDashboard = ({ data }) => {
                     </div>
                 </div>
 
-                {/* Chef Configuration (1/3rd width) */}
+                {/* Chef Configuration */}
                 <div className="col-span-1 bg-white p-6 rounded-xl shadow-lg">
                     <h3 className="text-xl font-semibold-gray-800 mb-4 border-b-gray pb-2">Chef </h3>
                     
@@ -689,7 +686,7 @@ const AnalyticsDashboard = ({ data }) => {
 };
 
 
-// --- MAIN APP COMPONENT ---
+// MAIN APP COMPONENT 
 const App = () => {
     // State using local storage for persistence
     const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 'analytics');
@@ -698,7 +695,7 @@ const App = () => {
     const [orders, setOrders] = useLocalStorage('orders', initialOrderList);
     const [menu, setMenu] = useLocalStorage('menu', initialMenuData);
     
-    // --- Navigation and Layout ---
+    // Navigation and Layout
 
     const renderPage = () => {
         switch (currentPage) {
@@ -754,721 +751,7 @@ const App = () => {
 
     return (
         <>
-        <style>
-        {`
-            /* Global Styles and Resets */
-            * {
-                box-sizing: border-box;
-                font-family: 'Inter', sans-serif;
-            }
-            body, #root {
-                margin: 0;
-                padding: 0;
-                height: 100vh;
-                width: 100vw;
-            }
-            .font-sans { font-family: 'Inter', sans-serif; }
-            .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-            .h-screen { height: 100vh; }
-            .bg-gray-100 { background-color: #f3f4f6; }
-            .bg-white { background-color: white; }
-            .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-            .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-            .rounded-xl { border-radius: 0.75rem; }
-            .transition-all { transition: all 0.3s ease-in-out; }
-            .flex { display: flex; }
-            .flex-col { flex-direction: column; }
-            .flex-1 { flex: 1; }
-            .p-4 { padding: 1rem; }
-            .p-6 { padding: 1.5rem; }
-            .space-y-4 > * + * { margin-top: 1rem; }
-            .space-y-6 > * + * { margin-top: 1.5rem; }
-            .w-full { width: 100%; }
-            .text-center { text-align: center; }
-            .text-gray-500 { color: #6b7280; }
-            .text-indigo-600 { color: #4f46e5; }
-            .text-sm { font-size: 0.875rem; }
-            .text-lg { font-size: 1.125rem; }
-            .text-xl { font-size: 1.25rem; }
-            .text-2xl { font-size: 1.5rem; }
-            .text-3xl { font-size: 1.875rem; }
-            .font-bold { font-weight: 700; }
-            .font-semibold { font-weight: 600; }
-            .font-extrabold { font-weight: 800; }
-            .uppercase { text-transform: uppercase; }
-            .capitalize { text-transform: capitalize; }
-            .hidden { display: none; }
-            .flex-justify-end { display: flex; justify-content: flex-end; }
-            .flex-align-center { display: flex; align-items: center; }
-            .flex-justify-between { display: flex; justify-content: space-between; }
-            .flex-items-start { display: flex; align-items: flex-start; }
-            .border-b-gray { border-bottom: 1px solid #e5e7eb; }
-
-            /* Main Layout */
-            .app-container {
-                display: flex;
-                height: 100vh;
-                background-color: #f3f4f6;
-            }
-            .sidebar {
-                width: 256px; /* w-64 */
-                background-color: white;
-                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-                padding: 1rem;
-                display: flex;
-                flex-direction: column;
-                flex-shrink: 0;
-            }
-            .main-content {
-                flex: 1;
-                overflow-y: auto;
-            }
-
-            /* Header */
-            .header {
-                background-color: white;
-                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-                padding: 1rem;
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .header__title {
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: #1f2937;
-            }
-            .header__search-container {
-                width: 33.333333%; /* w-1/3 */
-            }
-            .header__search-input {
-                padding: 0.5rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.5rem;
-                width: 100%;
-                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-                transition: border-color 0.15s ease, box-shadow 0.15s ease;
-            }
-            .header__search-input:focus {
-                outline: none;
-                border-color: #4f46e5; 
-                box-shadow: 0 0 0 1px #4f46e5;
-            }
-
-            /* Navigation Items */
-            .nav-item {
-                display: flex;
-                align-items: center;
-                padding: 1rem;
-                border-radius: 0.75rem;
-                font-size: 0.875rem;
-                font-weight: 600;
-                transition: all 0.2s ease;
-                width: 100%;
-                text-align: left;
-            }
-            .nav-item__icon {
-                margin-right: 0.75rem;
-                width: 1.5rem; /* w-6 */
-                height: 1.5rem; /* h-6 */
-            }
-            .nav-item--default {
-                color: #4b5563; /* text-gray-600 */
-            }
-            .nav-item--default:hover {
-                background-color: #f3f4f6; /* hover:bg-gray-100 */
-            }
-            .nav-item--active {
-                background-color: #4f46e5; /* bg-indigo-600 */
-                color: white;
-                box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(79, 70, 229, 0.05);
-            }
-
-            /* --- Dashboard & Analytics Styles --- */
-            .dashboard-grid {
-                display: grid;
-                gap: 1.5rem; /* gap-6 */
-                grid-template-columns: repeat(1, 1fr);
-            }
-            @media (min-width: 640px) {
-                .dashboard-grid {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-            }
-            @media (min-width: 1024px) { /* lg: */
-                .dashboard-grid-4-cols {
-                    grid-template-columns: repeat(4, 1fr);
-                }
-                .dashboard-grid-3-cols {
-                    grid-template-columns: repeat(3, 1fr);
-                }
-                .col-span-2 {
-                    grid-column: span 2 / span 2;
-                }
-                .col-span-1 {
-                    grid-column: span 1 / span 1;
-                }
-            }
-
-            .analytics-card {
-                background-color: white;
-                padding: 1.5rem;
-                border-radius: 0.75rem;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                justify-content: space-between;
-                min-height: 140px;
-                border-top: 4px solid #4f46e5;
-                cursor: default;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            .analytics-card:hover {
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                transform: scale(1.02);
-            }
-            .analytics-card__value {
-                font-size: 2.25rem;
-                font-weight: 700;
-                color: #1f2937;
-                margin-top: 0.25rem;
-            }
-            .analytics-card__title {
-                font-size: 0.875rem;
-                font-weight: 500;
-                color: #6b7280;
-                text-transform: uppercase;
-                margin-top: 1rem;
-            }
-
-            .metric-card {
-                background-color: white;
-                padding: 1.5rem;
-                border-radius: 0.75rem;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                min-height: 120px;
-                border-top: 4px solid #d1d5db;
-            }
-            .metric-card__value {
-                font-size: 2.25rem;
-                font-weight: 800;
-                color: #1f2937;
-            }
-            .metric-card__title {
-                font-size: 0.875rem;
-                font-weight: 500;
-                color: #6b7280;
-                margin-top: 0.25rem;
-            }
-
-            /* Progress Bars */
-            .progress-bar-label {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 0.25rem;
-                font-size: 0.875rem;
-                font-weight: 500;
-                color: #374151;
-            }
-            .progress-bar-track {
-                width: 100%;
-                background-color: #e5e7eb;
-                border-radius: 9999px;
-                height: 0.625rem;
-            }
-            .progress-bar-fill {
-                height: 0.625rem;
-                border-radius: 9999px;
-                transition: width 0.5s ease;
-            }
-            .bg-gray-700 { background-color: #374151; }
-            .bg-gray-500 { background-color: #6b7280; }
-            .bg-black { background-color: #1f2937; }
-
-            /* Chef Configuration */
-            .chef-config__item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.75rem;
-                background-color: #f9fafb;
-                border-radius: 0.5rem;
-            }
-            .chef-config__name {
-                font-weight: 600;
-                color: #4b5563;
-            }
-            .chef-config__orders {
-                font-size: 1.125rem;
-                font-weight: 700;
-                color: #4f46e5;
-            }
-
-
-            /* --- Tables Management Styles --- */
-            .tables-grid {
-                display: grid;
-                gap: 1rem;
-                padding: 1rem;
-                border-radius: 0.75rem;
-                background-color: #f9fafb;
-                box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-                grid-template-columns: repeat(2, 1fr);
-            }
-            @media (min-width: 768px) {
-                .tables-grid { grid-template-columns: repeat(3, 1fr); }
-            }
-            @media (min-width: 1024px) {
-                .tables-grid { grid-template-columns: repeat(4, 1fr); }
-            }
-            @media (min-width: 1280px) {
-                .tables-grid { grid-template-columns: repeat(6, 1fr); }
-            }
-
-            .table-card {
-                padding: 1rem;
-                border-radius: 0.75rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                align-items: center;
-                transition: all 0.2s ease;
-                width: 100%;
-                height: 128px;
-                cursor: pointer;
-            }
-            .table-card--unreserved {
-                background-color: white;
-                color: #1f2937;
-                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-                border: 1px solid #e5e7eb;
-            }
-            .table-card--unreserved:hover {
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            }
-            .table-card--reserved {
-                background-color: #059669;
-                color: white;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            }
-            .table-card__delete-btn {
-                padding: 0.25rem;
-                border-radius: 9999px;
-                transition: color 0.2s ease;
-            }
-            .table-card__delete-btn--unreserved {
-                color: #9ca3af;
-            }
-            .table-card__delete-btn--unreserved:hover {
-                color: #ef4444;
-            }
-            .table-card__delete-btn--reserved {
-                color: #a7f3d0;
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-            .table-card__name {
-                font-size: 0.75rem;
-                font-weight: 500;
-                text-transform: uppercase;
-                opacity: 0.8;
-            }
-            .table-card__id {
-                font-size: 1.875rem;
-                font-weight: 800;
-            }
-            .table-card__capacity-icon--unreserved {
-                color: #4f46e5;
-            }
-            .table-card__capacity-icon--reserved {
-                color: #a7f3d0;
-            }
-            .table-card__capacity-text--reserved {
-                color: rgba(255, 255, 255, 0.8);
-            }
-
-            /* Add New Table Block */
-            .table-card--add-new {
-                border: 2px dashed #d1d5db;
-                padding: 1rem;
-                border-radius: 0.75rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                height: 128px;
-                background-color: white;
-                transition: border-color 0.2s ease;
-            }
-            .table-card--add-new:hover {
-                border-color: #4f46e5;
-            }
-            .table-card--add-new-btn {
-                font-size: 2.25rem;
-                color: #9ca3af;
-                transition: color 0.2s ease;
-            }
-            .table-card--add-new:hover .table-card--add-new-btn {
-                color: #4f46e5;
-            }
-            .text-sm-gray-500 {
-                font-size: 0.875rem;
-                color: #6b7280;
-                margin-top: 0.5rem;
-            }
-
-            /* --- Modals (Custom, replacing alerts) --- */
-            .modal-overlay {
-                position: fixed;
-                inset: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 50;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 1rem;
-            }
-            .modal-content {
-                background-color: white;
-                border-radius: 0.75rem;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-                width: 100%;
-                max-width: 448px;
-                transition: all 0.2s ease;
-            }
-
-            .modal-header {
-                padding: 1.5rem;
-                border-bottom: 1px solid #e5e7eb;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .modal-header__title {
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: #1f2937;
-            }
-            .modal-close-btn {
-                color: #9ca3af;
-                transition: color 0.2s ease;
-            }
-            .modal-close-btn:hover {
-                color: #4b5563;
-            }
-            .modal-body {
-                padding: 1.5rem;
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-            }
-            .modal-input-label {
-                display: block;
-            }
-            .modal-input-span {
-                color: #374151;
-                font-weight: 500;
-            }
-            .modal-input {
-                margin-top: 0.25rem;
-                display: block;
-                width: 100%;
-                padding: 0.5rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.5rem;
-                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            }
-            .modal-input:focus {
-                outline: none;
-                border-color: #4f46e5;
-                box-shadow: 0 0 0 1px #4f46e5;
-            }
-            .modal-submit-btn {
-                width: 100%;
-                background-color: #4f46e5;
-                color: white;
-                padding: 0.75rem 1rem;
-                border-radius: 0.5rem;
-                font-weight: 600;
-                box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
-                transition: background-color 0.15s ease;
-            }
-            .modal-submit-btn:hover {
-                background-color: #4338ca;
-            }
-
-            /* Limit Message Modal */
-            .limit-modal-content {
-                max-width: 320px;
-                padding: 1.5rem;
-                text-align: center;
-            }
-            .limit-modal-title {
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: #dc2626;
-                margin-bottom: 0.75rem;
-            }
-            .limit-modal-text {
-                color: #374151;
-                margin-bottom: 1.25rem;
-            }
-            .limit-modal-btn {
-                width: 100%;
-                background-color: #dc2626;
-                color: white;
-                padding: 0.5rem 1rem;
-                border-radius: 0.5rem;
-                font-weight: 600;
-                transition: background-color 0.15s ease;
-            }
-            .limit-modal-btn:hover {
-                background-color: #b91c1c;
-            }
-
-
-            /* --- Orders Summary Styles --- */
-            .orders-grid {
-                display: grid;
-                gap: 1.5rem; /* gap-6 */
-                grid-template-columns: repeat(1, 1fr);
-            }
-            @media (min-width: 640px) { .orders-grid { grid-template-columns: repeat(2, 1fr); } }
-            @media (min-width: 1024px) { .orders-grid { grid-template-columns: repeat(3, 1fr); } }
-            @media (min-width: 1280px) { .orders-grid { grid-template-columns: repeat(4, 1fr); } }
-            .orders-grid-full-span {
-                grid-column: 1 / -1;
-            }
-
-            .order-card {
-                padding: 1.25rem; /* p-5 */
-                border-radius: 0.75rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                width: 100%;
-                min-height: 180px;
-                transition: all 0.2s ease;
-            }
-            .order-card--active {
-                background-color: white;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                border-top: 4px solid #4f46e5;
-            }
-            .order-card--done {
-                background-color: white;
-                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-                border-top: 4px solid #10b981;
-            }
-            .order-card--done-opacity {
-                opacity: 0.6;
-            }
-
-            .order-card__header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 0.75rem;
-                border-bottom: 1px solid #e5e7eb;
-                padding-bottom: 0.5rem;
-            }
-            .order-card__id-label {
-                font-size: 0.75rem;
-                font-weight: 500;
-                color: #6b7280;
-                text-transform: uppercase;
-            }
-            .order-card__id-value {
-                font-size: 1.125rem;
-                font-weight: 700;
-                color: #1f2937;
-            }
-
-            .order-card__status-tag {
-                padding: 0.25rem 0.75rem;
-                border-radius: 9999px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                border: 1px solid;
-                align-self: center;
-                white-space: nowrap;
-            }
-            .status-tag--completed { background-color: #d1fae5; border-color: #34d399; color: #065f46; }
-            .status-tag--processing { background-color: #fef3c7; border-color: #fbbf24; color: #b45309; }
-            .status-tag--pending { background-color: #fee2e2; border-color: #f87171; color: #b91c1c; }
-
-            .order-card__details {
-                margin-top: 0.5rem;
-                margin-bottom: 0.5rem;
-                font-size: 0.875rem;
-                color: #4b5563;
-            }
-            .order-card__detail-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 0.5rem;
-            }
-            .order-card__detail-row span:first-child { font-weight: 500; }
-            .order-card__detail-row span:last-child { font-weight: 600; color: #1f2937; }
-            .order-card__detail-row .chef-name { color: #4f46e5; }
-
-            .order-card__footer {
-                padding-top: 0.75rem;
-                margin-top: 0.75rem;
-                border-top: 1px solid #e5e7eb;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .order-card__timer-label {
-                font-size: 0.75rem;
-                font-weight: 500;
-                color: #6b7280;
-                text-transform: uppercase;
-            }
-            .order-card__timer-value {
-                font-size: 1.5rem;
-                font-weight: 800;
-            }
-            .timer-value--done { color: #10b981; }
-            .timer-value--active { color: #4f46e5; }
-            .timer-value--pending { color: #dc2626; }
-
-            .order-card__action-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-                font-weight: 600;
-                border-radius: 0.5rem;
-                transition: all 0.15s ease;
-                border: none;
-                cursor: pointer;
-            }
-            .action-btn--mark-done {
-                background-color: #4f46e5;
-                color: white;
-                box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -2px rgba(79, 70, 229, 0.05);
-            }
-            .action-btn--mark-done:hover:not(:disabled) {
-                background-color: #4338ca;
-            }
-            .action-btn--completed {
-                background-color: #10b981;
-                color: white;
-                opacity: 0.7;
-                cursor: not-allowed;
-                box-shadow: none;
-            }
-
-            /* --- Menu Card Styles --- */
-            .menu-grid {
-                display: grid;
-                gap: 1.5rem;
-                grid-template-columns: repeat(1, 1fr);
-            }
-            @media (min-width: 768px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
-            @media (min-width: 1024px) { .menu-grid { grid-template-columns: repeat(3, 1fr); } }
-
-            .menu-card {
-                background-color: white;
-                border-radius: 0.75rem;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                display: flex;
-                flex-direction: column;
-                transition: all 0.2s ease;
-            }
-            .menu-card:hover {
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-                transform: scale(1.01);
-            }
-            .menu-card__image-placeholder {
-                height: 12rem;
-                background-color: #e5e7eb;
-                border-top-left-radius: 0.75rem;
-                border-top-right-radius: 0.75rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #6b7280;
-                font-size: 0.875rem;
-            }
-            .menu-card__content {
-                padding: 1.25rem;
-                display: flex;
-                flex-direction: column;
-                flex-grow: 1;
-            }
-            .menu-card__title {
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: #1f2937;
-                margin-bottom: 0.25rem;
-            }
-            .menu-card__description {
-                font-size: 0.875rem;
-                color: #6b7280;
-                margin-bottom: 0.75rem;
-                overflow: hidden;
-                display: -webkit-box;
-                -webkit-box-orient: vertical;
-                -webkit-line-clamp: 2;
-            }
-
-            .menu-card__details {
-                padding-top: 0.5rem;
-                font-size: 0.875rem;
-            }
-            .detail-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                color: #374151;
-                margin-bottom: 0.5rem;
-            }
-            .detail-row span:first-child { font-weight: 500; }
-
-            .detail-row__price {
-                font-weight: 700;
-                font-size: 1.25rem;
-                color: #4f46e5;
-            }
-
-            .stock-tag {
-                font-weight: 700;
-                padding: 0.125rem 0.5rem;
-                border-radius: 9999px;
-                font-size: 0.75rem;
-            }
-            .stock-tag--in { color: #059669; background-color: #d1fae5; }
-            .stock-tag--out { color: #dc2626; background-color: #fee2e2; }
-
-            .rating-display {
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                padding-top: 0.5rem;
-            }
-            .rating-text {
-                font-size: 0.875rem;
-                font-weight: 700;
-            }
-            .rating-star {
-                width: 1rem;
-                height: 1rem;
-                margin-left: 0.25rem;
-            }
-            .text-yellow-500 { color: #f59e0b; }
-            .text-yellow-400 { color: #fbbf24; }
-        `}
-        </style>
+     
         <div className="app-container">
             
             {/* Left Sidebar Navigation */}
