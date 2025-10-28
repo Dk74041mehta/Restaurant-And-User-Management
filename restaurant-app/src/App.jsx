@@ -668,8 +668,8 @@ const AnalyticsDashboard = ({ data }) => {
                 </div>
 
                 {/* Chef Configuration */}
-                <div className="col-span-1 bg-white p-6 rounded-xl shadow-lg">
-                    <h3 className="text-xl font-semibold-gray-800 mb-4 border-b-gray pb-2">Chef </h3>
+                <div >
+                    <h3 >Chef </h3>
                     
                     <div className="space-y-3">
                         {data.chefOrders.map((chef, index) => (
