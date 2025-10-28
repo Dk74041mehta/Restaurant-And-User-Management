@@ -755,8 +755,8 @@ const App = () => {
         <div className="app-container">
             
             {/* Left Sidebar Navigation */}
-            <nav className="sidebar shadow-xl space-y-4">
-                <div className="text-2xl font-bold text-indigo-600 mb-6 p-2">
+            <nav >
+                <div>
                 </div>
                 {navItems.map(item => <NavItem key={item.id} {...item} />)}
             </nav>
@@ -777,7 +777,7 @@ const App = () => {
                 </header>
 
                 {/* Page Content */}
-                <div className="p-4 h-full">
+                <div >
                     {renderPage()}
                 </div>
             </main>
