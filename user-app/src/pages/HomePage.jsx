@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import Header from '../components/Header';
-import CategoryNav from '../components/CategoryNav';
 import MenuItemCard from '../components/MenuItemCard';
 import { CATEGORIES } from '../utils/constants';
 

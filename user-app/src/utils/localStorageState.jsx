@@ -14,7 +14,7 @@ export const useLocalStorageState = (key, defaultValue) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
-      // ignore
+    
     }
   }, [key, value]);
 

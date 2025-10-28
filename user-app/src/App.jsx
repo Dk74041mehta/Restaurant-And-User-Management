@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-// --- Custom Raw CSS Styling ---
+// Styling 
 const rawCssStyles = `
-  /* Global Resets and Fonts */
   body {
     background-color: #f0f0f0;
     font-family: 'Inter', sans-serif;
   }
 
-  /* Main App Container (Simulates a mobile frame) */
+  /* Main App Container */
   .app-container {
     max-width: 512px; /* Equivalent to max-w-lg */
     margin: 0 auto;
@@ -20,13 +19,13 @@ const rawCssStyles = `
     flex-direction: column;
   }
 
-  /* Scrollbar Hide Utility (for mobile feel) */
+  /* Scrollbar Hide Utility */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
   .scrollbar-hide {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; 
+    scrollbar-width: none;
   }
 
   /* Header Styles */
@@ -37,7 +36,7 @@ const rawCssStyles = `
     z-index: 10;
     padding-left: 1.25rem;
     padding-right: 1.25rem;
-    padding-top: 3rem; /* Simulates safe area/status bar */
+    padding-top: 3rem; 
     padding-bottom: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
@@ -49,25 +48,25 @@ const rawCssStyles = `
   }
   .search-input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 3rem; /* Padding left for icon */
-    color: #374151; /* gray-700 */
-    background-color: #F3F4F6; /* gray-100 */
-    border: 1px solid #E5E7EB; /* gray-200 */
-    border-radius: 0.75rem; /* rounded-xl */
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    color: #374151;
+    background-color: #F3F4F6;
+    border: 1px solid #E5E7EB; 
+    border-radius: 0.75rem; 
     outline: none;
     transition: border-color 150ms;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
   }
   .search-input:focus {
-    border-color: #CCCCCC; /* red-600 */
-    box-shadow: 0 0 0 1px #cccccc91; /* ring-red-500 */
+    border-color: #CCCCCC; 
+    box-shadow: 0 0 0 1px #cccccc91; 
   }
   .search-icon {
     position: absolute;
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #6B7280; /* gray-500 */
+    color: #6B7280; 
   }
 
   /* Category Navigation */
@@ -78,12 +77,12 @@ const rawCssStyles = `
   }
   .category-list {
     display: flex;
-    gap: 0.75rem; /* space-x-3 */
+    gap: 0.75rem; 
     padding-bottom: 0.5rem;
   }
   .category-button {
     padding: 0.5rem 1.25rem;
-    border-radius: 9999px; /* rounded-full */
+    border-radius: 9999px;
     font-size: 1rem;
     font-weight: 600;
     transition: all 200ms;
@@ -92,14 +91,14 @@ const rawCssStyles = `
   }
   .category-button-default {
     background-color: white;
-    color: #4B5563; /* gray-700 */
-    border: 1px solid #E5E7EB; /* gray-200 */
+    color: #4B5563; 
+    border: 1px solid #E5E7EB; 
   }
   .category-button-default:hover {
     background-color: #F9FAFB;
   }
   .category-button-active {
-    background-color: #CCCCCC; /* red-600 */
+    background-color: #CCCCCC; 
     color: white;
     box-shadow: 0 10px 15px -3px #fcf7f7f5, 0 4px 6px -4px #fcf7f7f5;
   }
@@ -108,7 +107,7 @@ const rawCssStyles = `
   .menu-item-list {
     padding: 1.25rem;
     padding-top: 0.75rem;
-    padding-bottom: 5rem; /* Space for fixed footer */
+    padding-bottom: 5rem; 
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -136,7 +135,7 @@ const rawCssStyles = `
   }
   .item-name {
     font-weight: 600;
-    color: #1F2937; /* gray-800 */
+    color: #1F2937; 
   }
   .item-price {
     font-size: 1.125rem;
@@ -175,11 +174,11 @@ const rawCssStyles = `
     background-color: #CCCCCC;
   }
   .quantity-button-remove {
-    background-color: #FEE2E2; /* red-100 */
+    background-color: #FEE2E2; 
     color: #CCCCCC;
   }
   .quantity-button-remove:hover {
-    background-color: #FECACA; /* red-200 */
+    background-color: #FECACA; 
   }
   .quantity-display {
     width: 1.5rem;
@@ -188,7 +187,7 @@ const rawCssStyles = `
     color: #1F2937;
   }
   
-  /* Simple Add Button (when item is not in cart) */
+  /* Simple Add Button */
   .add-button-plus {
     width: 2.5rem;
     height: 2.5rem;
@@ -273,7 +272,7 @@ const rawCssStyles = `
     font-size: 1.25rem;
     font-weight: 700;
     color: #1F2937;
-    margin-left: -2rem; /* Center the title over the back button space */
+    margin-left: -2rem; 
   }
 
   /* Mode Toggle */
@@ -322,7 +321,7 @@ const rawCssStyles = `
     /* FIX: Ensure proper box model and width */
     width: 100%;
     min-width: 0; 
-    box-sizing: border-box; /* Ensures padding doesn't push it wider than 100% */
+    box-sizing: border-box; 
     padding: 1rem;
     border: 1px solid #E5E7EB;
     border-radius: 0.75rem;
@@ -339,7 +338,7 @@ const rawCssStyles = `
   }
   .form-textarea {
     resize: none;
-    white-space: normal; /* Allow text wrapping in textarea */
+    white-space: normal; 
     overflow: auto;
   }
   .form-submit-button {
@@ -359,11 +358,11 @@ const rawCssStyles = `
     background-color: #CCCCCC;
   }
   .form-submit-button:disabled {
-    background-color: #9CA3AF; /* gray-400 */
+    background-color: #9CA3AF; 
     cursor: not-allowed;
   }
 
-  /* Order Items List (Checkout Details) */
+  /* checkout Details*/
   .order-list-card {
     padding: 1rem;
     border: 1px solid #F3F4F6;
@@ -477,7 +476,7 @@ const rawCssStyles = `
     align-items: center;
     overflow: hidden;
     box-shadow: 0 8px 10px #fcf7f7f5;
-    touch-action: pan-y; /* Important for preventing browser swipe gestures */
+    touch-action: pan-y; 
   }
   .swipe-handle {
     height: 100%;
@@ -607,7 +606,7 @@ const rawCssStyles = `
   }
 `;
 
-// --- Static Data (Mock Menu) ---
+// --- Static Data ---
 const mockMenu = [
   { id: 1, name: 'Capricciosa Pizza', description: 'Classic Italian pizza.', price: 200, category: 'Pizza', imageUrl: 'https://placehold.co/100x100/F06060/ffffff?text=Capricciosa' },
   { id: 2, name: 'Sicilian Pizza', description: 'Thick crust Sicilian style.', price: 150, category: 'Pizza', imageUrl: 'https://placehold.co/100x100/F06060/ffffff?text=Sicilian' },
@@ -624,7 +623,7 @@ const mockMenu = [
 const categories = ['All', ...new Set(mockMenu.map(item => item.category))];
 const TABLE_SIZES = [2, 4, 6, 8];
 
-// --- Local Storage Hooks (For persistent user data across pages) ---
+// --- Local Storage Hooks ---
 const useLocalStorageState = (key, defaultValue) => {
   const [value, setValue] = useState(() => {
     try {
@@ -655,14 +654,14 @@ const BackButton = ({ onClick }) => (
       className="back-button"
       style={{
         padding: '0.25rem',
-        color: '#1F2937', // gray-800
+        color: '#1F2937', 
         transition: 'color 150ms',
         backgroundColor: 'transparent',
         border: 'none',
         cursor: 'pointer'
       }}
     >
-      {/* Chevron Left Icon */}
+    
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="m15 18-6-6 6-6"/>
       </svg>
@@ -681,7 +680,7 @@ const ThankYouScreen = ({ countdown }) => (
     </div>
 );
 
-// --- User Details Form (Refactored outside App to fix focus) ---
+// --- User Details Form  ---
 const UserDetailsForm = ({ userData, setUserData, onNext, currentPage }) => {
     const isTakeAway = userData.mode === 'Take Away';
 
@@ -803,19 +802,19 @@ const CookingInstructionsModal = ({ cookingInstructions, setCookingInstructions,
     </div>
 );
 
-// --- Checkout Screen (Refactored outside App) ---
+// --- Checkout Screen ---
 const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstructions, navigateTo, updateCartQuantity, handleOrderPlace, cartTotal }) => {
     const isTakeAway = userData.mode === 'Take Away';
     const deliveryCharge = isTakeAway ? 50 : 0;
     const taxes = 5.00; // Mock fixed tax
     const grandTotal = cartTotal + deliveryCharge + taxes;
 
-    // --- Component for Swipe to Order (Raw CSS/Inline Style) ---
+    // --- Component for Swipe to Order---
     const SwipeToOrderButton = () => {
         const [isSwiping, setIsSwiping] = useState(false);
         const [startX, setStartX] = useState(0);
         const [currentX, setCurrentX] = useState(0);
-        const threshold = 150; // Distance to count as a 'swipe'
+        const threshold = 150; 
         const maxSwipe = 250;
 
         const handleStart = (clientX) => {
@@ -826,7 +825,6 @@ const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstr
         const handleMove = (clientX) => {
             if (!isSwiping) return;
             const diffX = clientX - startX;
-            // Restrict movement between 0 and maxSwipe
             setCurrentX(Math.min(maxSwipe, Math.max(0, diffX)));
         };
 
@@ -836,7 +834,7 @@ const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstr
             if (currentX > threshold) {
             handleOrderPlace();
             }
-            setCurrentX(0); // Reset position
+            setCurrentX(0); 
         };
 
         const handleTouchStart = (e) => handleStart(e.touches[0].clientX);
@@ -846,7 +844,7 @@ const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstr
         const handleMouseDown = (e) => handleStart(e.clientX);
         const handleMouseMove = (e) => handleMove(e.clientX);
         const handleMouseUp = () => handleEnd();
-        const handleMouseLeave = () => isSwiping && handleEnd(); // Important for desktop simulation
+        const handleMouseLeave = () => isSwiping && handleEnd(); 
 
         const swipeStyle = {
             transform: `translateX(${currentX}px)`,
@@ -991,7 +989,6 @@ const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstr
 
         </div>
 
-        {/* Fixed Swipe Footer - Only on Details/Order Summary Screen */}
         {currentPage === 'details' && (
            <SwipeToOrderButton />
         )}
@@ -999,7 +996,7 @@ const CheckoutScreen = ({ currentPage, cart, userData, setUserData, cookingInstr
     );
 };
 
-// --- Home Screen (Refactored outside App) ---
+// --- Home Screen  ---
 const HomeScreen = ({ cart, searchTerm, setSearchTerm, updateCartQuantity, addItemToCart, navigateTo, cartTotal }) => {
     const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -1076,7 +1073,7 @@ const HomeScreen = ({ cart, searchTerm, setSearchTerm, updateCartQuantity, addIt
 
     return (
       <div style={{display: 'flex', flexDirection: 'column', flexGrow: 1}}>
-        {/* Header and Search (Sticky) */}
+        {/* Header and Search */}
         <div className="header-sticky">
           <header style={{marginBottom: '1rem'}}>
             <div style={{fontSize: '1.25rem', fontWeight: '500', color: '#6B7280'}}>Good Evening</div>
@@ -1183,7 +1180,6 @@ export default function App() {
   const navigateTo = useCallback((page) => setCurrentPage(page), []);
 
   const handleOrderPlace = useCallback(() => {
-    // Simulating order placement success
     if (cart.length === 0) return;
 
     // Reset countdown for thank you screen
@@ -1211,7 +1207,6 @@ export default function App() {
 
 
   const renderContent = () => {
-    // Show NoCartScreen if trying to access checkout/details with an empty cart
     if ((currentPage === 'checkout' || currentPage === 'details' || currentPage === 'cooking-instructions') && cart.length === 0) {
       return (
         <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center', padding: '1.5rem'}}>
@@ -1254,10 +1249,9 @@ export default function App() {
         );
       case 'cooking-instructions':
         return (
-          // Render CheckoutScreen first, then the modal overlay on top
           <>
             <CheckoutScreen 
-                currentPage='details' // Always show the details view under the modal
+                currentPage='details' 
                 cart={cart}
                 userData={userData}
                 setUserData={setUserData}
