@@ -300,14 +300,7 @@ const OrderCard = ({ order, onOrderDone }) => {
                         {timeDisplay}
                     </p>
                 </div>
-                
-                <button 
-                    onClick={() => onOrderDone(order.id)}
-                    disabled={order.isDone}
-                    className={`order-card__action-btn ${actionBtnClass}`}
-                >
-                    {order.isDone ? 'Completed' : 'Mark Done'}
-                </button>
+              
             </div>
         </div>
     );
@@ -364,7 +357,6 @@ const MenuItemCard = ({ item }) => {
 const MenuManagement = ({ menu }) => {
     return (
         <div className="flex-col p-6 space-y-6">
-            <h2 className="header__title">Menu Management</h2>
             
             <div className="menu-grid overflow-y-auto pb-4">
                 {menu.length > 0 ? (
@@ -483,7 +475,6 @@ const TablesManagement = ({ tables, setTables }) => {
 
   return (
     <div className="flex-col p-6 space-y-6">
-      <h2 className="header__title">Tables Management</h2>
 
       <div className="tables-grid">
         {tables.map((table) => (
@@ -596,7 +587,7 @@ const OrdersSummary = ({ orders, setOrders }) => {
 
     return (
         <div className="flex-col p-6 space-y-6">
-            <h2 className="header__title">Order Line (Active Orders)</h2>
+            <h2 className="header__title">Order Line</h2>
 
             <div className="orders-grid">
                 {activeOrders.length > 0 ? (
@@ -638,7 +629,7 @@ const OrdersSummary = ({ orders, setOrders }) => {
 const AnalyticsDashboard = ({ data }) => {
     return (
         <div className="flex-col p-6 space-y-6">
-            <h2 className="header__title">Analytics Dashboard</h2>
+            <h2 className="header__title">Analytics</h2>
 
             {/* Top Metrics Grid */}
             <div className="dashboard-grid dashboard-grid-4-cols">
@@ -682,8 +673,7 @@ const AnalyticsDashboard = ({ data }) => {
 
                 {/* Chef Configuration (1/3rd width) */}
                 <div className="col-span-1 bg-white p-6 rounded-xl shadow-lg">
-                    <h3 className="text-xl font-semibold-gray-800 mb-4 border-b-gray pb-2">Chef Configuration</h3>
-                    <p className="text-sm-gray-500 mb-4">Orders assigned based on least current load.</p>
+                    <h3 className="text-xl font-semibold-gray-800 mb-4 border-b-gray pb-2">Chef </h3>
                     
                     <div className="space-y-3">
                         {data.chefOrders.map((chef, index) => (
