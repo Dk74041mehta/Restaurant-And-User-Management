@@ -399,13 +399,13 @@ const TablesManagement = ({ tables, setTables }) => {
 
         const maxId = tables.reduce((max, table) => Math.max(max, table.id), 0);
         const newTable = {
-            id: maxId + 1, // Simple sequential ID generation
+            id: maxId + 1, //Simple sequential ID generation
             name: newTableName || null,
             capacity: newTableCapacity,
             isReserved: false,
         };
         
-        // Update local storage state
+        //Update local storage state
         setTables(prev => [...prev, newTable].sort((a, b) => a.id - b.id));
         setNewTableName('');
         setNewTableCapacity(4);
