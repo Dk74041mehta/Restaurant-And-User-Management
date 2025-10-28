@@ -47,7 +47,7 @@ const rawCssStyles = `
     margin-bottom: 1.25rem;
   }
   .search-input {
-    width: 100%;
+    width: 85%;
     padding: 0.75rem 1rem 0.75rem 3rem;
     color: #374151;
     background-color: #F3F4F6;
