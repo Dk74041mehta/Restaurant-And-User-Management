@@ -101,7 +101,7 @@ const rawCssStyles = `
   .category-button-active {
     background-color: #CCCCCC; /* red-600 */
     color: white;
-    box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3), 0 4px 6px -4px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 10px 15px -3px #fcf7f7f5, 0 4px 6px -4px #fcf7f7f5;
   }
 
   /* Menu Item Card */
@@ -169,7 +169,7 @@ const rawCssStyles = `
   .quantity-button-add {
     background-color: #CCCCCC;
     color: white;
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 2px 4px #fcf7f7f5;
   }
   .quantity-button-add:hover {
     background-color: #CCCCCC;
@@ -201,7 +201,7 @@ const rawCssStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 4px 6px #fcf7f7f5;
     transition: background-color 150ms;
   }
   .add-button-plus:hover {
@@ -229,7 +229,7 @@ const rawCssStyles = `
     background-color: #CCCCCC;
     padding: 1rem;
     border-radius: 0.75rem;
-    box-shadow: 0 10px 15px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 10px 15px #fcf7f7f5;
     color: white;
     cursor: pointer;
     transition: background-color 150ms;
@@ -353,7 +353,7 @@ const rawCssStyles = `
   }
   .form-submit-button:not(:disabled) {
     background-color: #CCCCCC;
-    box-shadow: 0 8px 10px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 8px 10px #fcf7f7f5;
   }
   .form-submit-button:not(:disabled):hover {
     background-color: #CCCCCC;
@@ -476,7 +476,7 @@ const rawCssStyles = `
     display: flex;
     align-items: center;
     overflow: hidden;
-    box-shadow: 0 8px 10px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 8px 10px #fcf7f7f5;
     touch-action: pan-y; /* Important for preventing browser swipe gestures */
   }
   .swipe-handle {
@@ -602,7 +602,7 @@ const rawCssStyles = `
     color: white;
     font-weight: 700;
     border-radius: 9999px;
-    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 4px 6px #fcf7f7f5;
     transition: background-color 150ms;
   }
 `;
