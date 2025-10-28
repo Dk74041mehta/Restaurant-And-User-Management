@@ -59,8 +59,8 @@ const rawCssStyles = `
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
   }
   .search-input:focus {
-    border-color: #DC2626; /* red-600 */
-    box-shadow: 0 0 0 1px #F87171; /* ring-red-500 */
+    border-color: #CCCCCC; /* red-600 */
+    box-shadow: 0 0 0 1px #cccccc91; /* ring-red-500 */
   }
   .search-icon {
     position: absolute;
@@ -99,7 +99,7 @@ const rawCssStyles = `
     background-color: #F9FAFB;
   }
   .category-button-active {
-    background-color: #DC2626; /* red-600 */
+    background-color: #CCCCCC; /* red-600 */
     color: white;
     box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3), 0 4px 6px -4px rgba(220, 38, 38, 0.3);
   }
@@ -141,7 +141,7 @@ const rawCssStyles = `
   .item-price {
     font-size: 1.125rem;
     font-weight: 800;
-    color: #DC2626; /* red-600 */
+    color: #CCCCCC; 
   }
 
   /* Quantity Controls */
@@ -167,16 +167,16 @@ const rawCssStyles = `
     transition: background-color 150ms;
   }
   .quantity-button-add {
-    background-color: #DC2626;
+    background-color: #CCCCCC;
     color: white;
     box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
   }
   .quantity-button-add:hover {
-    background-color: #B91C1C;
+    background-color: #CCCCCC;
   }
   .quantity-button-remove {
     background-color: #FEE2E2; /* red-100 */
-    color: #DC2626;
+    color: #CCCCCC;
   }
   .quantity-button-remove:hover {
     background-color: #FECACA; /* red-200 */
@@ -192,7 +192,7 @@ const rawCssStyles = `
   .add-button-plus {
     width: 2.5rem;
     height: 2.5rem;
-    background-color: #DC2626;
+    background-color: #CCCCCC;
     color: white;
     border-radius: 9999px;
     font-weight: 700;
@@ -205,7 +205,7 @@ const rawCssStyles = `
     transition: background-color 150ms;
   }
   .add-button-plus:hover {
-    background-color: #B91C1C;
+    background-color: #CCCCCC;
   }
 
   /* Fixed Checkout Footer */
@@ -226,7 +226,7 @@ const rawCssStyles = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #DC2626;
+    background-color: #CCCCCC;
     padding: 1rem;
     border-radius: 0.75rem;
     box-shadow: 0 10px 15px rgba(220, 38, 38, 0.4);
@@ -235,7 +235,7 @@ const rawCssStyles = `
     transition: background-color 150ms;
   }
   .checkout-button-bar:hover {
-    background-color: #B91C1C;
+    background-color: #CCCCCC;
   }
   .checkout-summary-text {
     font-size: 1rem;
@@ -299,7 +299,7 @@ const rawCssStyles = `
   }
   .mode-toggle-button.active {
     background-color: white;
-    color: #DC2626;
+    color: #CCCCCC;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
@@ -334,8 +334,8 @@ const rawCssStyles = `
     text-overflow: ellipsis; 
   }
   .form-input:focus, .form-textarea:focus, .form-select:focus {
-    border-color: #DC2626;
-    box-shadow: 0 0 0 1px #F87171;
+    border-color: #CCCCCC;
+    box-shadow: 0 0 0 1px #ccccccc5;
   }
   .form-textarea {
     resize: none;
@@ -352,11 +352,11 @@ const rawCssStyles = `
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
   .form-submit-button:not(:disabled) {
-    background-color: #DC2626;
+    background-color: #CCCCCC;
     box-shadow: 0 8px 10px rgba(220, 38, 38, 0.4);
   }
   .form-submit-button:not(:disabled):hover {
-    background-color: #B91C1C;
+    background-color: #CCCCCC;
   }
   .form-submit-button:disabled {
     background-color: #9CA3AF; /* gray-400 */
@@ -386,7 +386,7 @@ const rawCssStyles = `
   }
   .order-item-price {
     font-weight: 700;
-    color: #DC2626;
+    color: #CCCCCC;
     font-size: 0.875rem;
   }
   
@@ -428,7 +428,7 @@ const rawCssStyles = `
     top: 1rem;
     right: 1rem;
     font-size: 0.75rem;
-    color: #DC2626;
+    color: #CCCCCC;
     font-weight: 700;
     text-decoration: underline;
   }
@@ -456,7 +456,7 @@ const rawCssStyles = `
     margin-top: 0.5rem;
     font-size: 1.125rem;
     font-weight: 800;
-    color: #DC2626;
+    color: #CCCCCC;
   }
 
   /* Swipe To Order Feature */
@@ -470,7 +470,7 @@ const rawCssStyles = `
   .swipe-button-base {
     position: relative;
     height: 3.5rem;
-    background-color: #DC2626;
+    background-color: #CCCCCC;
     color: white;
     border-radius: 9999px;
     display: flex;
@@ -483,7 +483,7 @@ const rawCssStyles = `
     height: 100%;
     width: 3.5rem;
     background-color: white;
-    color: #DC2626;
+    color: #CCCCCC;
     border-radius: 9999px;
     display: flex;
     align-items: center;
@@ -512,7 +512,7 @@ const rawCssStyles = `
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: #DC2626;
+    background-color: #20BF6D;
     color: white;
     text-align: center;
     padding: 1.5rem;
@@ -533,7 +533,7 @@ const rawCssStyles = `
     stroke-dashoffset: 200;
     animation: drawCheck 0.6s ease-out forwards;
     animation-delay: 0.1s;
-    stroke: #DC2626;
+    stroke: #CCCCCC;
     stroke-width: 4;
     fill: none;
   }
@@ -598,7 +598,7 @@ const rawCssStyles = `
   .modal-button-primary {
     flex: 1;
     padding: 0.75rem;
-    background-color: #DC2626;
+    background-color: #CCCCCC;
     color: white;
     font-weight: 700;
     border-radius: 9999px;
