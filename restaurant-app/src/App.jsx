@@ -173,47 +173,47 @@ const TableCard = ({ table, onDelete }) => {
     const deleteIconClass = table.isReserved ? 'table-card__delete-btn--reserved' : 'table-card__delete-btn--unreserved';
     const capacityTextColor = table.isReserved ? 'table-card__capacity-text--reserved' : '';
 
-    // return (
-    //     <div className={`table-card ${cardClass}`} onClick={() => console.log(`Table ${table.id} clicked`)}>
-    //         {/* Top Row: Delete Button */}
-    //         <div className="flex-justify-end w-full">
-    //             <button 
-    //                 onClick={(e) => {
-    //                     e.stopPropagation();
-    //                     if (table.isReserved) {
-    //                         console.warn("Reserved tables cannot be deleted.");
-    //                     } else {
-    //                         onDelete(table.id);
-    //                     }
-    //                 }}
-    //                 disabled={table.isReserved}
-    //                 className={`table-card__delete-btn ${deleteIconClass} ${table.isReserved ? 'cursor-not-allowed' : ''}`}
-    //                 title={table.isReserved ? "Reserved tables cannot be deleted" : "Delete Table"}
-    //             >
-    //                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    //                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-    //                 </svg>
-    //             </button>
-    //         </div>
+    return (
+        <div className={`table-card ${cardClass}`} onClick={() => console.log(`Table ${table.id} clicked`)}>
+            {/* Top Row: Delete Button */}
+            <div className="flex-justify-end w-full">
+                <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (table.isReserved) {
+                            console.warn("Reserved tables cannot be deleted.");
+                        } else {
+                            onDelete(table.id);
+                        }
+                    }}
+                    disabled={table.isReserved}
+                    className={`table-card__delete-btn ${deleteIconClass} ${table.isReserved ? 'cursor-not-allowed' : ''}`}
+                    title={table.isReserved ? "Reserved tables cannot be deleted" : "Delete Table"}
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
             
-    //         {/* Middle: Table Number */}
-    //         <div className="text-center">
-    //             <p className="table-card__name">{table.name || 'Table'}</p>
-    //             <p className="table-card__id">{table.id.toString().padStart(2, '0')}</p>
-    //         </div>
+            {/* Middle: Table Number */}
+            <div className="text-center">
+                <p className="table-card__name">{table.name || 'Table'}</p>
+                <p className="table-card__id">{table.id.toString().padStart(2, '0')}</p>
+            </div>
 
-    //         {/* Bottom Row: Capacity (Chair Icon) */}
-    //         <div className="flex-align-center text-sm font-semibold mt-1">
-    //             {/* Simple chair/person icon using inline SVG */}
-    //             <svg className={`w-4 h-4 mr-1 ${capacityIconClass}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    //                 <path d="M16 8C16 9.10457 15.1046 10 14 10C12.8954 10 12 9.10457 12 8C12 6.89543 12.8954 6 14 6C15.1046 6 16 6.89543 16 8Z" />
-    //                 <path d="M17 14.5C17 13.1193 15.6569 12 14 12C12.3431 12 11 13.1193 11 14.5V17H17V14.5Z" />
-    //                 <path d="M5 5v14h14V5H5zm12 12H7v-3h10v3zM7 7h10v3H7V7z" opacity="0.3" fill="currentColor"/>
-    //             </svg>
-    //             <span className={capacityTextColor}>{table.capacity} Persons</span>
-    //         </div>
-    //     </div>
-    // );
+            {/* Bottom Row: Capacity (Chair Icon) */}
+            <div className="flex-align-center text-sm font-semibold mt-1">
+                {/* Simple chair/person icon using inline SVG */}
+                <svg className={`w-4 h-4 mr-1 ${capacityIconClass}`} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 8C16 9.10457 15.1046 10 14 10C12.8954 10 12 9.10457 12 8C12 6.89543 12.8954 6 14 6C15.1046 6 16 6.89543 16 8Z" />
+                    <path d="M17 14.5C17 13.1193 15.6569 12 14 12C12.3431 12 11 13.1193 11 14.5V17H17V14.5Z" />
+                    <path d="M5 5v14h14V5H5zm12 12H7v-3h10v3zM7 7h10v3H7V7z" opacity="0.3" fill="currentColor"/>
+                </svg>
+                <span className={capacityTextColor}>{table.capacity} Persons</span>
+            </div>
+        </div>
+    );
 };
 
 /** Single Order Card Component (for Order Line) */
