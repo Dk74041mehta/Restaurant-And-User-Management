@@ -382,150 +382,196 @@ const MenuManagement = ({ menu }) => {
     );
 };
 
-// --- TABLES COMPONENT ---
+import React, { useState } from "react";
+import { Trash2 } from "lucide-react";
+
+// --- TABLE CARD COMPONENT ---
+// const TableCard = ({ table, onDelete }) => (
+//   <div
+//     className={`table-card ${
+//       table.isReserved ? "table-card--reserved" : "table-card--unreserved"
+//     }`}
+//   >
+//     <div className="flex justify-between w-full">
+//       <span className="table-card__name">{table.name || "Unnamed"}</span>
+//       <button
+//         className={`table-card__delete-btn ${
+//           table.isReserved
+//             ? "table-card__delete-btn--reserved"
+//             : "table-card__delete-btn--unreserved"
+//         }`}
+//         onClick={() => !table.isReserved && onDelete(table.id)}
+//         disabled={table.isReserved}
+//         title={
+//           table.isReserved
+//             ? "Cannot delete reserved table"
+//             : "Delete this table"
+//         }
+//       >
+//         <Trash2 size={18} />
+//       </button>
+//     </div>
+//     <div className="table-card__id">#{table.id}</div>
+//     <div
+//       className={`table-card__capacity-text ${
+//         table.isReserved
+//           ? "table-card__capacity-text--reserved"
+//           : "table-card__capacity-icon--unreserved"
+//       }`}
+//     >
+//       Capacity: {table.capacity}
+//     </div>
+//   </div>
+// );
+
+// --- MAIN COMPONENT ---
 const TablesManagement = ({ tables, setTables }) => {
-    const MAX_TABLES = 30;
-    const [newTableCapacity, setNewTableCapacity] = useState(4);
-    const [newTableName, setNewTableName] = useState('');
-    const [limitMessage, setLimitMessage] = useState(null);
-    const availableCapacities = [2, 4, 6, 8];
+  const MAX_TABLES = 30;
+  const [newTableCapacity, setNewTableCapacity] = useState(4);
+  const [newTableName, setNewTableName] = useState("");
+  const [limitMessage, setLimitMessage] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const availableCapacities = [2, 4, 6, 8];
 
-    // Handles the addition of a new table
-    const handleAddTable = () => {
-        if (tables.length >= MAX_TABLES) {
-            setLimitMessage(`Maximum limit of ${MAX_TABLES} tables reached.`);
-            return;
-        }
+  // Add new table
+  const handleAddTable = () => {
+    if (tables.length >= MAX_TABLES) {
+      setLimitMessage(`Maximum limit of ${MAX_TABLES} tables reached.`);
+      return;
+    }
 
-        const maxId = tables.reduce((max, table) => Math.max(max, table.id), 0);
-        const newTable = {
-            id: maxId + 1, //Simple sequential ID generation
-            name: newTableName || null,
-            capacity: newTableCapacity,
-            isReserved: false,
-        };
-        
-        //Update local storage state
-        setTables(prev => [...prev, newTable].sort((a, b) => a.id - b.id));
-        setNewTableName('');
-        setNewTableCapacity(4);
-        // Close the creation modal
-        document.getElementById('addTableModal').classList.add('hidden');
-        console.log(`Table ${newTable.id} added.`);
+    const maxId = tables.reduce((max, table) => Math.max(max, table.id), 0);
+    const newTable = {
+      id: maxId + 1,
+      name: newTableName || null,
+      capacity: newTableCapacity,
+      isReserved: false,
     };
 
-    // Handles deletion and ensures sequential ID numbering
-    const handleDeleteTable = (idToDelete) => {
-        const tableToDelete = tables.find(t => t.id === idToDelete);
-        if (tableToDelete && tableToDelete.isReserved) {
-            console.warn("Reserved tables cannot be deleted.");
-            return;
-        }
+    setTables((prev) => [...prev, newTable].sort((a, b) => a.id - b.id));
+    setNewTableName("");
+    setNewTableCapacity(4);
+    setShowAddModal(false); // ✅ close modal after adding
+    console.log(`Table ${newTable.id} added.`);
+  };
 
-        // Filter out the deleted table
-        let updatedTables = tables.filter(table => table.id !== idToDelete);
-        
-        // Reshuffle table numbering to be sequential (SRD requirement: 1, 2, 3...)
-        updatedTables = updatedTables.map((table, index) => ({
-            ...table,
-            id: index + 1,
-        }));
+  // Delete table
+  const handleDeleteTable = (idToDelete) => {
+    const tableToDelete = tables.find((t) => t.id === idToDelete);
+    if (tableToDelete && tableToDelete.isReserved) {
+      console.warn("Reserved tables cannot be deleted.");
+      return;
+    }
 
-        setTables(updatedTables);
-        console.log(`Table ${idToDelete} deleted and tables renumbered.`);
-    };
+    let updatedTables = tables.filter((table) => table.id !== idToDelete);
+    updatedTables = updatedTables.map((table, index) => ({
+      ...table,
+      id: index + 1,
+    }));
 
-    const handleOpenAddTableModal = () => {
-        if (tables.length >= MAX_TABLES) {
-            setLimitMessage(`Maximum limit of ${MAX_TABLES} tables reached.`);
-        } else {
-            document.getElementById('addTableModal').classList.remove('hidden');
-        }
-    };
+    setTables(updatedTables);
+    console.log(`Table ${idToDelete} deleted and renumbered.`);
+  };
 
-    return (
-        <div className="flex-col p-6 space-y-6">
-            <h2 className="header__title">Tables Management</h2>
-            
-            <div className="tables-grid">
-                {/* Existing Tables Grid */}
-                {tables.map(table => (
-                    <TableCard key={table.id} table={table} onDelete={handleDeleteTable} />
-                ))}
+  // Open modal
+  const handleOpenAddTableModal = () => {
+    if (tables.length >= MAX_TABLES) {
+      setLimitMessage(`Maximum limit of ${MAX_TABLES} tables reached.`);
+    } else {
+      setShowAddModal(true);
+    }
+  };
 
-                {/* Add New Table Block */}
-                <div className="table-card--add-new transition-colors">
-                    <button 
-                        onClick={handleOpenAddTableModal}
-                        className="table-card--add-new-btn transition-colors"
-                        title="Add New Table"
-                    >
-                        +
-                    </button>
-                    <p className="text-sm-gray-500 mt-2">Add New Table</p>
-                </div>
-            </div>
+  return (
+    <div className="flex-col p-6 space-y-6">
+      <h2 className="header__title">Tables Management</h2>
 
-            {/* Modal for Adding Table (Custom, avoiding alert/confirm) */}
-            <div id="addTableModal" className="hidden modal-overlay">
-                <div className="modal-content w-full max-w-sm">
-                    <div className="modal-header">
-                        <h3 className="modal-header__title">Create New Table</h3>
-                        <button onClick={() => document.getElementById('addTableModal').classList.add('hidden')} className="modal-close-btn">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                    <div className="modal-body space-y-4">
-                        <label className="modal-input-label">
-                            <span className="modal-input-span">Table Name (Optional):</span>
-                            <input
-                                type="text"
-                                value={newTableName}
-                                onChange={(e) => setNewTableName(e.target.value)}
-                                className="modal-input"
-                                placeholder="e.g., Booth 5"
-                            />
-                        </label>
-                        <label className="modal-input-label">
-                            <span className="modal-input-span">Capacity:</span>
-                            <select
-                                value={newTableCapacity}
-                                onChange={(e) => setNewTableCapacity(parseInt(e.target.value))}
-                                className="modal-input bg-white"
-                            >
-                                {availableCapacities.map(cap => (
-                                    <option key={cap} value={cap}>{cap} Persons</option>
-                                ))}
-                            </select>
-                        </label>
-                        <button
-                            onClick={handleAddTable}
-                            className="modal-submit-btn"
-                        >
-                            Create Table
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            {/* Custom Modal for Maximum Table Limit Message */}
-            {limitMessage && (
-                <div className="modal-overlay">
-                    <div className="modal-content limit-modal-content">
-                        <h3 className="limit-modal-title">Limit Reached</h3>
-                        <p className="limit-modal-text">{limitMessage}</p>
-                        <button
-                            onClick={() => setLimitMessage(null)}
-                            className="limit-modal-btn"
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>
-            )}
+      <div className="tables-grid">
+        {tables.map((table) => (
+          <TableCard key={table.id} table={table} onDelete={handleDeleteTable} />
+        ))}
+
+        {/* Add new table card */}
+        <div className="table-card--add-new transition-colors">
+          <button
+            onClick={handleOpenAddTableModal}
+            className="table-card--add-new-btn transition-colors"
+            title="Add New Table"
+          >
+            +
+          </button>
+          <p className="text-sm-gray-500 mt-2">Add New Table</p>
         </div>
-    );
+      </div>
+
+      {/* Add Table Modal */}
+      {showAddModal && (
+        <div className="modal-overlay">
+          <div className="modal-content w-full max-w-sm">
+            <div className="modal-header">
+              <h3 className="modal-header__title">Create New Table</h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="modal-close-btn"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body space-y-4">
+              <label className="modal-input-label">
+                <span className="modal-input-span">Table Name (Optional):</span>
+                <input
+                  type="text"
+                  value={newTableName}
+                  onChange={(e) => setNewTableName(e.target.value)}
+                  className="modal-input"
+                  placeholder="e.g., Booth 5"
+                />
+              </label>
+              <label className="modal-input-label">
+                <span className="modal-input-span">Capacity:</span>
+                <select
+                  value={newTableCapacity}
+                  onChange={(e) =>
+                    setNewTableCapacity(parseInt(e.target.value))
+                  }
+                  className="modal-input bg-white"
+                >
+                  {availableCapacities.map((cap) => (
+                    <option key={cap} value={cap}>
+                      {cap} Persons
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button onClick={handleAddTable} className="modal-submit-btn">
+                Create Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Limit Message Modal */}
+      {limitMessage && (
+        <div className="modal-overlay">
+          <div className="modal-content limit-modal-content">
+            <h3 className="limit-modal-title">Limit Reached</h3>
+            <p className="limit-modal-text">{limitMessage}</p>
+            <button
+              onClick={() => setLimitMessage(null)}
+              className="limit-modal-btn"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
+
+
 
 // --- ORDERS COMPONENT ---
 const OrdersSummary = ({ orders, setOrders }) => {
